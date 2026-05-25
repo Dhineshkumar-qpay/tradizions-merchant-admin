@@ -1,0 +1,189 @@
+.business-mgmt-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.business-table th {
+    padding: 16px;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    text-transform: uppercase;
+}
+
+.biz-row {
+    transition: all 0.2s;
+}
+
+.biz-row:hover {
+    background-color: var(--bg-hover) !important;
+}
+
+.business-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.biz-id-tag {
+    background: #f0fdf4;
+    color: #16a34a;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.biz-info-cell {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.biz-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+}
+
+.biz-meta .name {
+    display: block;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.biz-meta .desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.location-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-badge.verified {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.status-badge.pending {
+    background: #fffbeb;
+    color: #f59e0b;
+}
+
+.status-badge.rejected {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.action-btn.view {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.action-btn.view:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.action-btn-more {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+}
+
+/* Responsiveness for Business Listing */
+@media (max-width: 1024px) {
+    .business-mgmt-container .page-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 15px !important;
+    }
+
+    .business-mgmt-container .page-header .header-actions {
+        width: 100% !important;
+    }
+
+    .business-mgmt-container .page-header button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-filters-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 15px !important;
+    }
+
+    .search-box {
+        width: 100% !important;
+    }
+
+    .filter-options {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    .filter-item {
+        width: 100% !important;
+    }
+
+    .filter-item select {
+        width: 100% !important;
+    }
+
+    .pagination-footer {
+        flex-direction: column !important;
+        gap: 15px !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .business-mgmt-container {
+        padding: 10px;
+    }
+
+    .business-mgmt-container h1 {
+        font-size: 22px;
+    }
+
+    .header-text p {
+        font-size: 13px;
+    }
+}

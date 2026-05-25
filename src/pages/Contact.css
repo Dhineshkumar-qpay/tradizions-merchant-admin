@@ -1,0 +1,102 @@
+.contact-page-container {
+    animation: fadeIn 0.4s ease-out;
+    padding-bottom: 30px;
+}
+
+.contact-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.contact-table th,
+.contact-table td {
+    padding: 18px 20px;
+    vertical-align: middle;
+}
+
+.contact-row {
+    transition: background 0.2s;
+}
+
+.contact-row:hover {
+    background: #f9fbf8;
+}
+
+.name-text {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.subject-text {
+    font-weight: 500;
+    color: var(--text-main);
+    max-width: 200px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Detail Drawer Styles */
+.inquiry-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 25px;
+    background: white;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    border: 1px solid #f0f3ee;
+}
+
+.icon-avatar {
+    width: 64px;
+    height: 64px;
+    background: #f0f7e9;
+    color: var(--primary);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.message-content-box {
+    background: white;
+    border: 1px solid #f0f3ee;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.message-text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-main);
+    font-style: italic;
+    font-family: 'Outfit', sans-serif;
+    margin: 0;
+}
+
+/* Status nuances for inquiries */
+.status-badge.new {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.status-badge.in-progress {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.status-badge.resolved {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.drawer-actions-footer {
+    padding: 24px;
+    border-top: 1px solid #f0f3ee;
+    background: white;
+    margin-top: auto;
+}
