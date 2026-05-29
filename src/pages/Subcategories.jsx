@@ -68,7 +68,7 @@ const Subcategories = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await API.get(APIROUTES.GETALLCATEGORIES);
+      const response = await API.post(APIROUTES.GETALLCATEGORIES);
       const data = response.data?.data || response.data;
       if (Array.isArray(data) && data.length > 0) {
         setCategories(data);

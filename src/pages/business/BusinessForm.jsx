@@ -26,6 +26,14 @@ const BusinessForm = () => {
   const [activeTab, setActiveTab] = useState("basic");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [locationData, setLocationData] = useState({});
+
+  useEffect(() => {
+    fetch("/location/india_states_districts.json")
+      .then((res) => res.json())
+      .then((data) => setLocationData(data))
+      .catch((err) => console.error("Error loading location data:", err));
+  }, []);
 
   const [formData, setFormData] = useState({
     ownername: "",
@@ -41,6 +49,7 @@ const BusinessForm = () => {
     opentime: "",
     closetime: "",
     businessimage: "",
+    businessinfoid: 0,
 
     addressline: "",
     landmark: "",
@@ -53,6 +62,7 @@ const BusinessForm = () => {
     pincode: "",
     latitude: 11.3667,
     longitude: 77.7867,
+    addressid: 0,
 
     accountholdername: "",
     accountnumber: "",
@@ -60,6 +70,7 @@ const BusinessForm = () => {
     branchname: "",
     ifsc: "",
     passbook: "",
+    bankid: 0,
   });
 
   const tabs = [
@@ -136,6 +147,7 @@ const BusinessForm = () => {
             opentime: shop.opentime || "",
             closetime: shop.closetime || "",
             businessimage: shop.businessimage || "",
+            businessinfoid: shop.businessinfoid || 0,
 
             addressline: address.addressline || "",
             landmark: address.landmark || "",
@@ -148,6 +160,7 @@ const BusinessForm = () => {
             pincode: address.pincode || "",
             latitude: address.latitude || 11.3667,
             longitude: address.longitude || 77.7867,
+            addressid: address.addressid || 0,
 
             accountholdername: bank.accountholdername || "",
             accountnumber: bank.accountnumber || "",
@@ -155,6 +168,7 @@ const BusinessForm = () => {
             branchname: bank.branchname || "",
             ifsc: bank.ifsc || "",
             passbook: bank.passbook || "",
+            bankid: bank.bankid || 0,
           });
         } catch (error) {
           console.error("Error loading edit business details:", error);
@@ -189,14 +203,15 @@ const BusinessForm = () => {
       // 2. Save Business Info (multipart/form-data)
       const businessFormData = new FormData();
       businessFormData.append("bid", bid.toString());
+      if (formData.businessinfoid) {
+        businessFormData.append("businessinfoid", formData.businessinfoid.toString());
+      }
       businessFormData.append("businessname", formData.businessname);
       businessFormData.append("legalbusinessname", formData.legalbusinessname);
       businessFormData.append("description", formData.description);
       businessFormData.append("opentime", formData.opentime);
       businessFormData.append("closetime", formData.closetime);
       if (formData.businessimage instanceof File) {
-        businessFormData.append("businessimage", formData.businessimage);
-      } else if (formData.businessimage) {
         businessFormData.append("businessimage", formData.businessimage);
       }
       await API.post(APIROUTES.ADDBUSINESSINFO, businessFormData, {
@@ -206,6 +221,7 @@ const BusinessForm = () => {
       // 3. Save Address Info
       const addressPayload = {
         bid: bid,
+        addressid: formData.addressid || 0,
         addressline: formData.addressline,
         landmark: formData.landmark,
         city: formData.city,
@@ -223,6 +239,9 @@ const BusinessForm = () => {
       // 4. Save Bank Info (multipart/form-data)
       const bankFormData = new FormData();
       bankFormData.append("bid", bid.toString());
+      if (formData.bankid) {
+        bankFormData.append("bankid", formData.bankid.toString());
+      }
       bankFormData.append("accountholdername", formData.accountholdername);
       bankFormData.append("accountnumber", formData.accountnumber);
       bankFormData.append("bankname", formData.bankname);
@@ -230,10 +249,10 @@ const BusinessForm = () => {
       bankFormData.append("ifsc", formData.ifsc);
       if (formData.passbook instanceof File) {
         bankFormData.append("passbook", formData.passbook);
-      } else if (formData.passbook) {
-        bankFormData.append("passbook", formData.passbook);
       }
-      await API.post(APIROUTES.ADDBANKINFO, bankFormData, {
+      
+      const bankApiRoute = formData.bankid ? APIROUTES.UPDATEBANKINFO : APIROUTES.ADDBANKINFO;
+      await API.post(bankApiRoute, bankFormData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -570,46 +589,54 @@ const BusinessForm = () => {
                 <label className="field-label">
                   District <span>*</span>
                 </label>
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  list="district-options"
+                  className="form-input"
+                  placeholder="Select or type District"
                   value={formData.district}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
                       district: e.target.value,
-                      districtid: e.target.value === "Erode" ? 8 : 1,
+                      districtid: 8,
                     })
                   }
                   required
-                >
-                  <option value="">Select District</option>
-                  <option value="Erode">Erode</option>
-                  <option value="Salem">Salem</option>
-                  <option value="Chennai">Chennai</option>
-                  <option value="Coimbatore">Coimbatore</option>
-                </select>
+                />
+                <datalist id="district-options">
+                  {formData.state && locationData[formData.state]
+                    ? locationData[formData.state].map((dist) => (
+                        <option key={dist} value={dist} />
+                      ))
+                    : null}
+                </datalist>
               </div>
               <div className="field-group">
                 <label className="field-label">
                   State <span>*</span>
                 </label>
-                <select
-                  className="form-select"
+                <input
+                  type="text"
+                  list="state-options"
+                  className="form-input"
+                  placeholder="Select or type State"
                   value={formData.state}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
                       state: e.target.value,
                       stateid: 1,
+                      district: "", // reset district on state change
                     })
                   }
                   required
-                >
-                  <option value="">Select State</option>
-                  <option value="Tamil Nadu">Tamil Nadu</option>
-                  <option value="Karnataka">Karnataka</option>
-                  <option value="Kerala">Kerala</option>
-                </select>
+                />
+                <datalist id="state-options">
+                  {Object.keys(locationData).map((st) => (
+                    <option key={st} value={st} />
+                  ))}
+                </datalist>
               </div>
               <div className="field-group">
                 <label className="field-label">

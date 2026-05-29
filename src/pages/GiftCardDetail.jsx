@@ -223,18 +223,24 @@ const GiftCardDetail = () => {
                   <p
                     style={{ fontWeight: "700", color: "var(--primary-dark)" }}
                   >
-                    ₹{gift.giftsellingprice}{" "}
-                    <span
-                      style={{
-                        textDecoration: "line-through",
-                        fontSize: "13px",
-                        color: "var(--text-muted)",
-                        fontWeight: "400",
-                        marginLeft: "5px",
-                      }}
-                    >
-                      ₹{gift.giftprice}
-                    </span>
+                    {gift.giftsellingprice > 0 ? (
+                      <>
+                        ₹{gift.giftsellingprice}{" "}
+                        <span
+                          style={{
+                            textDecoration: "line-through",
+                            fontSize: "13px",
+                            color: "var(--text-muted)",
+                            fontWeight: "400",
+                            marginLeft: "5px",
+                          }}
+                        >
+                          ₹{gift.giftprice}
+                        </span>
+                      </>
+                    ) : (
+                      <>₹{gift.giftprice}</>
+                    )}
                   </p>
                 </div>
               </div>

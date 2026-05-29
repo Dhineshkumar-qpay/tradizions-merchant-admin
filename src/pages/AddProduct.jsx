@@ -21,6 +21,8 @@ const AddProduct = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [healthGoalsList, setHealthGoalsList] = useState([]);
+  const [selectedHealthGoals, setSelectedHealthGoals] = useState([]);
 
   const [productimage, setProductImage] = useState(null);
   const [productimages, setProductimage] = useState({
@@ -58,6 +60,8 @@ const AddProduct = () => {
     fat: 0,
     carbohydrates: 0,
     country: "India",
+    isNewArrivals: false,
+    healthgoalids:[]
   });
 
   useEffect(() => {
@@ -79,6 +83,17 @@ const AddProduct = () => {
         const catData = catRes.data?.data || catRes.data;
         if (Array.isArray(catData)) {
           setCategories(catData);
+        }
+
+        // Fetch Health Goals
+        try {
+          const healthRes = await API.post(APIROUTES.GETHEALTHGOALS);
+          const healthData = healthRes.data?.data || healthRes.data;
+          if (Array.isArray(healthData)) {
+            setHealthGoalsList(healthData);
+          }
+        } catch (err) {
+          console.error("Failed to load health goals:", err);
         }
       } catch (err) {
         console.error("Failed to load initial data:", err);
@@ -200,6 +215,7 @@ const AddProduct = () => {
       // Step 2: Add Product
       const productPayload = {
         ...productData,
+        healthgoalids: selectedHealthGoals,
         productimage: uploadedImagePath,
       };
 
@@ -242,8 +258,8 @@ const AddProduct = () => {
       console.error("Save product failed:", err);
       setError(
         err?.response?.data?.message ||
-          err.message ||
-          "Failed to create product",
+        err.message ||
+        "Failed to create product",
       );
       setSubmitting(false);
     }
@@ -606,6 +622,33 @@ const AddProduct = () => {
                 </div>
               </div>
             </section>
+
+            {/* Health Goals */}
+            <section className="form-section">
+              <h3>Health Goals</h3>
+              <div className="health-goals-container" style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
+                {healthGoalsList.length > 0 ? (
+                  healthGoalsList.map((goal) => (
+                    <label key={goal.goalid} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedHealthGoals.includes(goal.goalid)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedHealthGoals([...selectedHealthGoals, goal.goalid]);
+                          } else {
+                            setSelectedHealthGoals(selectedHealthGoals.filter(id => id !== goal.goalid));
+                          }
+                        }}
+                      />
+                      <span>{goal.goalname}</span>
+                    </label>
+                  ))
+                ) : (
+                  <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>No health goals available.</span>
+                )}
+              </div>
+            </section>
           </div>
 
           <div className="form-side">
@@ -749,6 +792,22 @@ const AddProduct = () => {
                         setProductData({
                           ...productData,
                           isBestSeller: e.target.checked,
+                        })
+                      }
+                    />
+                    <span className="slider"></span>
+                  </label>
+                </div>
+                <div className="switch-container">
+                  <span className="switch-label">New Arrival</span>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={productData.isNewArrivals}
+                      onChange={(e) =>
+                        setProductData({
+                          ...productData,
+                          isNewArrivals: e.target.checked,
                         })
                       }
                     />

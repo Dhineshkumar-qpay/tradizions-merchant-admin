@@ -12,6 +12,7 @@ import {
   Award,
   Flame,
   Info,
+  Sparkles,
 } from "lucide-react";
 import { API } from "../service/api_service";
 import { APIROUTES } from "../routes/api_routes";
@@ -499,32 +500,35 @@ const ProductDetail = () => {
                 <span
                   style={{
                     fontWeight: "600",
-                    textDecoration: "line-through",
-                    color: "var(--text-muted)",
+                    textDecoration: product.sellingprice > 0 ? "line-through" : "none",
+                    color: product.sellingprice > 0 ? "var(--text-muted)" : "var(--primary-dark)",
+                    fontSize: product.sellingprice > 0 ? "14px" : "16px",
                   }}
                 >
                   ₹{product.price}
                 </span>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  padding: "10px 0",
-                  borderBottom: "1px solid #edf2e9",
-                }}
-              >
-                <span style={{ color: "var(--text-muted)" }}>Offer Price:</span>
-                <span
+              {product.sellingprice > 0 && (
+                <div
                   style={{
-                    fontWeight: "700",
-                    color: "var(--primary-dark)",
-                    fontSize: "16px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: "10px 0",
+                    borderBottom: "1px solid #edf2e9",
                   }}
                 >
-                  ₹{product.sellingprice}
-                </span>
-              </div>
+                  <span style={{ color: "var(--text-muted)" }}>Offer Price:</span>
+                  <span
+                    style={{
+                      fontWeight: "700",
+                      color: "var(--primary-dark)",
+                      fontSize: "16px",
+                    }}
+                  >
+                    ₹{product.sellingprice}
+                  </span>
+                </div>
+              )}
               <div
                 style={{
                   display: "flex",
@@ -642,6 +646,32 @@ const ProductDetail = () => {
                 </span>
                 {product.isBestSeller ? (
                   <Award size={16} style={{ color: "#d97706" }} />
+                ) : (
+                  <Info size={16} style={{ color: "#c2d1b8" }} />
+                )}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px 12px",
+                  background: product.isNewArrivals ? "#fdf4ff" : "#fbfdfb",
+                  borderRadius: "8px",
+                  border: "1px solid #edf2e9",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    color: product.isNewArrivals ? "#c026d3" : "var(--text-muted)",
+                  }}
+                >
+                  New Arrivals
+                </span>
+                {product.isNewArrivals ? (
+                  <Sparkles size={16} style={{ color: "#c026d3" }} />
                 ) : (
                   <Info size={16} style={{ color: "#c2d1b8" }} />
                 )}

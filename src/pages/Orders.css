@@ -73,18 +73,18 @@
 }
 
 .stat-icon.pending {
-    background: #fff9e6;
-    color: #f39c12;
+    background: #FEF3C7;
+    color: #F59E0B;
 }
 
 .stat-icon.delivered {
-    background: #e8f8f0;
-    color: #27ae60;
+    background: #D1FAE5;
+    color: #10B981;
 }
 
 .stat-icon.cancelled {
-    background: #fff1f1;
-    color: #e74c3c;
+    background: #FEE2E2;
+    color: #EF4444;
 }
 
 .stat-data {
@@ -109,7 +109,8 @@
 .table-filters-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
+    flex-wrap: wrap;
     padding: 15px 20px;
     gap: 15px;
     border-bottom: 1px solid #f0f3ee;
@@ -122,12 +123,14 @@
     align-items: center;
     gap: 12px;
     background: white;
-    flex: 1;
+    flex: 1 1 200px;
     max-width: 400px;
     padding: 10px 16px;
     border-radius: 12px;
     border: 1.5px solid #eee;
     transition: all 0.3s;
+    height: 38px;
+    margin-bottom: 1px;
 }
 
 .search-box:focus-within {
@@ -137,6 +140,8 @@
 
 .filter-options {
     display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
     gap: 15px;
 }
 
@@ -303,51 +308,33 @@
 }
 
 .status-badge.delivered {
-    background: #e8f8f0;
-    color: #27ae60;
-    border: 1px solid #d4efdf;
+    background: #D1FAE5;
+    color: #10B981;
+    border: 1px solid #10B981;
 }
 
 .status-badge.confirmed {
-    background: #eef2ff;
-    color: #4338ca;
-    border: 1px solid #e0e7ff;
+    background: #DBEAFE;
+    color: #3B82F6;
+    border: 1px solid #3B82F6;
 }
 
 .status-badge.pending {
-    background: #fefce8;
-    color: #a16207;
-    border: 1px solid #fef9c3;
+    background: #FEF3C7;
+    color: #F59E0B;
+    border: 1px solid #F59E0B;
 }
 
 .status-badge.shipped {
-    background: #faf5ff;
-    color: #7e22ce;
-    border: 1px solid #f3e8ff;
-}
-
-.status-badge.processing {
-    background: #eff6ff;
-    color: #1d4ed8;
-    border: 1px solid #dbeafe;
-}
-
-.status-badge.packed {
-    background: #fff7ed;
-    color: #c2410c;
-    border: 1px solid #ffedd5;
-}
-
-.status-badge.outfordelivery {
-    background: #f0fdfa;
-    color: #0f766e;
-    border: 1px solid #ccfbf1;
+    background: #EDE9FE;
+    color: #8B5CF6;
+    border: 1px solid #8B5CF6;
 }
 
 .status-badge.cancelled {
-    background: #fff1f1;
-    color: #dc2626;
-    border: 1px solid #fee2e2;
+    background: #FEE2E2;
+    color: #EF4444;
+    border: 1px solid #EF4444;
 }
 
 .status-badge .dot {
@@ -355,7 +342,7 @@
     height: 6px;
     border-radius: 50%;
     margin-right: 6px;
-    background-color: currentColor;
+    background-color: white;
     display: inline-block;
 }
 
@@ -461,11 +448,6 @@
     box-shadow: 0 0 0 1px #eee;
 }
 
-.order-timeline .step.active .bullet {
-    background: var(--primary);
-    box-shadow: 0 0 0 1px var(--primary);
-}
-
 .order-timeline span {
     font-size: 9px;
     font-weight: 700;
@@ -473,9 +455,35 @@
     text-transform: uppercase;
 }
 
-.order-timeline .step.active span {
-    color: var(--primary);
+.order-timeline .step.pending.active .bullet {
+    background: #F59E0B;
+    box-shadow: 0 0 0 1px #F59E0B;
 }
+.order-timeline .step.pending.active span { color: #F59E0B; }
+
+.order-timeline .step.confirmed.active .bullet {
+    background: #3B82F6;
+    box-shadow: 0 0 0 1px #3B82F6;
+}
+.order-timeline .step.confirmed.active span { color: #3B82F6; }
+
+.order-timeline .step.shipped.active .bullet {
+    background: #8B5CF6;
+    box-shadow: 0 0 0 1px #8B5CF6;
+}
+.order-timeline .step.shipped.active span { color: #8B5CF6; }
+
+.order-timeline .step.delivered.active .bullet {
+    background: #10B981;
+    box-shadow: 0 0 0 1px #10B981;
+}
+.order-timeline .step.delivered.active span { color: #10B981; }
+
+.order-timeline .step.cancelled.active .bullet {
+    background: #EF4444;
+    box-shadow: 0 0 0 1px #EF4444;
+}
+.order-timeline .step.cancelled.active span { color: #EF4444; }
 
 /* Drawer Grid */
 .drawer-grid {

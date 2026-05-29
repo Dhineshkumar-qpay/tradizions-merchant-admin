@@ -267,12 +267,16 @@ const ListGiftCards = () => {
                     <td>
                       <div className="gift-pricing">
                         <div className="price-main">
-                          <span className="offer">
-                            ₹{card.giftsellingprice}
-                          </span>
-                          <span className="original">₹{card.giftprice}</span>
+                          {card.giftsellingprice > 0 ? (
+                            <>
+                              <span className="offer">₹{card.giftsellingprice}</span>
+                              <span className="original" style={{ textDecoration: "line-through" }}>₹{card.giftprice}</span>
+                            </>
+                          ) : (
+                            <span className="offer">₹{card.giftprice}</span>
+                          )}
                         </div>
-                        {card.giftprice > card.giftsellingprice && (
+                        {card.giftsellingprice > 0 && card.giftprice > card.giftsellingprice && (
                           <span className="discount-tag">
                             {Math.round(
                               ((card.giftprice - card.giftsellingprice) /

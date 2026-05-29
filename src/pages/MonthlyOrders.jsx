@@ -14,13 +14,14 @@ import {
   Package,
   Gift,
   Phone,
+  Mail,
   MapPin,
   Trash2,
   X,
   CreditCard,
   Download,
   Loader2,
-  User
+  User,
 } from "lucide-react";
 import "./Orders.css";
 import { API } from "../service/api_service";
@@ -36,6 +37,13 @@ const MonthlyOrders = () => {
   const [orderDetails, setOrderDetails] = useState(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [processingId, setProcessingId] = useState(null);
+  const [selectedStatusChanges, setSelectedStatusChanges] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const [filterOrderStatus, setFilterOrderStatus] = useState("all");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState("pending");
+  const [filterDate, setFilterDate] = useState("last1month");
 
   useEffect(() => {
     const fetchBusinesses = async () => {
@@ -61,9 +69,18 @@ const MonthlyOrders = () => {
       try {
         const response = await API.post(APIROUTES.CALCULATORMERCHANTORDERS, {
           bid: selectedBusinessId,
+          orderstatus: filterOrderStatus,
+          paymentstatus: filterPaymentStatus,
+          date: filterDate,
         });
         if (response.data && response.data.statusCode === 200) {
-          setOrders(response.data.data || []);
+          const rawData = response.data.data || [];
+          const formattedData = rawData.map((o) => ({
+            ...o,
+            orderstatus: o.orderstatus ? String(o.orderstatus).toLowerCase() : o.orderstatus,
+            itemstatus: o.itemstatus ? String(o.itemstatus).toLowerCase() : o.itemstatus,
+          }));
+          setOrders(formattedData);
         }
       } catch (error) {
         console.error("Error fetching monthly orders:", error);
@@ -72,7 +89,7 @@ const MonthlyOrders = () => {
       }
     };
     fetchOrders();
-  }, [selectedBusinessId]);
+  }, [selectedBusinessId, filterOrderStatus, filterPaymentStatus, filterDate]);
 
   const handleViewOrder = async (order) => {
     setSelectedOrder(order);
@@ -82,7 +99,17 @@ const MonthlyOrders = () => {
         orderid: order.orderid,
       });
       if (response.data && response.data.statusCode === 200) {
-        setOrderDetails(response.data.data);
+        let data = response.data.data;
+        if (data && data.order && data.order.orderstatus) {
+          data.order.orderstatus = String(data.order.orderstatus).toLowerCase();
+        }
+        if (data && data.items) {
+          data.items = data.items.map(item => ({
+            ...item,
+            itemstatus: item.itemstatus ? String(item.itemstatus).toLowerCase() : item.itemstatus
+          }));
+        }
+        setOrderDetails(data);
       }
     } catch (error) {
       console.error("Error fetching order details:", error);
@@ -104,7 +131,14 @@ const MonthlyOrders = () => {
   const filteredOrders = orders.filter(
     (o) =>
       (o.orderid && String(o.orderid).includes(searchTerm)) ||
-      (o.ordertype && o.ordertype.toLowerCase().includes(searchTerm.toLowerCase()))
+      (o.ordertype &&
+        o.ordertype.toLowerCase().includes(searchTerm.toLowerCase())),
+  );
+
+  const totalPages = Math.ceil(filteredOrders.length / rowsPerPage);
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage,
   );
 
   const handleStatusUpdate = async (id, newStatus) => {
@@ -117,17 +151,17 @@ const MonthlyOrders = () => {
       if (response.data && response.data.statusCode === 200) {
         setOrders((prevOrders) =>
           prevOrders.map((o) =>
-            o.orderid === id ? { ...o, orderstatus: newStatus } : o
-          )
+            o.orderid === id ? { ...o, orderstatus: newStatus } : o,
+          ),
         );
         if (selectedOrder && selectedOrder.orderid === id) {
           setSelectedOrder({ ...selectedOrder, orderstatus: newStatus });
         }
         if (orderDetails && orderDetails.order) {
-            setOrderDetails({
-                ...orderDetails,
-                order: { ...orderDetails.order, orderstatus: newStatus }
-            });
+          setOrderDetails({
+            ...orderDetails,
+            order: { ...orderDetails.order, orderstatus: newStatus },
+          });
         }
       }
     } catch (error) {
@@ -144,7 +178,8 @@ const MonthlyOrders = () => {
         <div className="header-text">
           <h1>Monthly Orders Management</h1>
           <p>
-            Monitor your monthly subscription sales and manage customer fulfillment journeys.
+            Monitor your monthly subscription sales and manage customer
+            fulfillment journeys.
           </p>
         </div>
         <div className="header-actions">
@@ -219,12 +254,69 @@ const MonthlyOrders = () => {
                 ))}
               </select>
             </div>
+            <div className="filter-item">
+              <label>Order Status</label>
+              <select
+                value={filterOrderStatus}
+                onChange={(e) => setFilterOrderStatus(e.target.value)}
+              >
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Payment Status</label>
+              <select
+                value={filterPaymentStatus}
+                onChange={(e) => setFilterPaymentStatus(e.target.value)}
+              >
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+            <div className="filter-item">
+              <label>Date</label>
+              <select
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+              >
+                <option value="all">All Time</option>
+                <option value="last7days">Last 7 Days</option>
+                <option value="last1month">Last 1 Month</option>
+                <option value="last6months">Last 6 Months</option>
+              </select>
+            </div>
+            <div className="filter-item" style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  setFilterOrderStatus("all");
+                  setFilterPaymentStatus("pending");
+                  setFilterDate("last1month");
+                }}
+                style={{ height: '38px' }}
+              >
+                Clear Filters
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="table-responsive">
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "40px",
+              }}
+            >
               <div className="circular-loader"></div>
             </div>
           ) : filteredOrders.length > 0 ? (
@@ -241,14 +333,13 @@ const MonthlyOrders = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.map((order) => (
+                {paginatedOrders.map((order) => (
                   <tr key={order.orderid} className="order-row">
                     <td>
                       <span className="order-id-tag">ORD-{order.orderid}</span>
                     </td>
                     <td>
                       <span className={`type-tag monthly`}>
-                        <Package size={12} />
                         {order.ordertype || "Monthly"}
                       </span>
                     </td>
@@ -256,13 +347,16 @@ const MonthlyOrders = () => {
                       <span className="amount">₹{order.totalamount}</span>
                     </td>
                     <td>
-                      <span className={`payment-badge ${order.paymentstatus === 'paid' ? 'paid' : 'pending'}`}>{order.paymentstatus}</span>
+                      <span
+                        className={`payment-badge ${order.paymentstatus === "paid" ? "paid" : "pending"}`}
+                      >
+                        {order.paymentstatus}
+                      </span>
                     </td>
                     <td>
                       <span
                         className={`status-badge ${order.orderstatus.toLowerCase()}`}
                       >
-                        <div className="dot"></div>
                         {order.orderstatus}
                       </span>
                     </td>
@@ -278,25 +372,62 @@ const MonthlyOrders = () => {
                         >
                           <Eye size={16} />
                         </button>
-                        <div className="status-dropdown-wrap">
+                        <div
+                          className="status-dropdown-wrap"
+                          style={{
+                            display: "flex",
+                            gap: "8px",
+                            alignItems: "center",
+                          }}
+                        >
                           {processingId === order.orderid ? (
                             <Loader2 size={16} className="animate-spin" />
                           ) : (
-                            <select
-                              value={order.orderstatus}
-                              disabled={order.orderstatus === "delivered"}
-                              onChange={(e) =>
-                                handleStatusUpdate(order.orderid, e.target.value)
-                              }
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "4px",
+                              }}
                             >
-                              <option value="pending">Pending</option>
-                              <option value="confirmed">Confirmed</option>
-                              <option value="processing">Processing</option>
-                              <option value="packed">Packed</option>
-                              <option value="shipped">Shipped</option>
-                              <option value="outfordelivery">Out for Delivery</option>
-                              <option value="delivered">Delivered</option>
-                            </select>
+                              <select
+                                value={
+                                  selectedStatusChanges[order.orderid] ||
+                                  order.orderstatus
+                                }
+                                disabled={order.orderstatus === "delivered" || order.orderstatus === "cancelled"}
+                                onChange={(e) =>
+                                  setSelectedStatusChanges({
+                                    ...selectedStatusChanges,
+                                    [order.orderid]: e.target.value,
+                                  })
+                                }
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="shipped">Shipped</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                              </select>
+                              <button
+                                className="btn-secondary"
+                                style={{ padding: "4px 8px", fontSize: "12px" }}
+                                onClick={() =>
+                                  handleStatusUpdate(
+                                    order.orderid,
+                                    selectedStatusChanges[order.orderid] ||
+                                    order.orderstatus,
+                                  )
+                                }
+                                disabled={
+                                  !selectedStatusChanges[order.orderid] ||
+                                  selectedStatusChanges[order.orderid] ===
+                                  order.orderstatus
+                                }
+                              >
+                                Confirm
+                              </button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -312,6 +443,70 @@ const MonthlyOrders = () => {
               <p>We couldn't find any monthly orders matching your filters.</p>
             </div>
           )}
+        </div>
+
+        <div
+          className="pagination-footer"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "12px 16px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <p>
+              Showing{" "}
+              <strong>
+                {Math.min(
+                  (currentPage - 1) * rowsPerPage + 1,
+                  filteredOrders.length || 1,
+                )}
+              </strong>{" "}
+              to{" "}
+              <strong>
+                {Math.min(currentPage * rowsPerPage, filteredOrders.length)}
+              </strong>{" "}
+              of <strong>{filteredOrders.length}</strong> Results
+            </p>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              style={{
+                padding: "4px 8px",
+                borderRadius: "4px",
+                border: "1px solid #ddd",
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={30}>30</option>
+              <option value={40}>40</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+          <div className="page-controls">
+            <button
+              className="btn-page"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button className="btn-page active">{currentPage}</button>
+            <button
+              className="btn-page"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages || totalPages === 0}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -337,143 +532,235 @@ const MonthlyOrders = () => {
 
             <div className="drawer-content">
               {loadingDetails ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-                    <div className="circular-loader"></div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "40px",
+                  }}
+                >
+                  <div className="circular-loader"></div>
                 </div>
               ) : orderDetails ? (
                 <>
-                {/* Timeline */}
-                <div className="order-timeline">
-                    <div
-                    className={`step ${["pending", "confirmed", "processing", "packed", "shipped", "outfordelivery", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
-                    >
-                    <div className="bullet"></div>
-                    <span>Pending</span>
-                    </div>
-                    <div
-                    className={`step ${["confirmed", "processing", "packed", "shipped", "outfordelivery", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
-                    >
-                    <div className="bullet"></div>
-                    <span>Confirmed</span>
-                    </div>
-                    <div
-                    className={`step ${["processing", "packed", "shipped", "outfordelivery", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
-                    >
-                    <div className="bullet"></div>
-                    <span>Processing</span>
-                    </div>
-                    <div
-                    className={`step ${["packed", "shipped", "outfordelivery", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
-                    >
-                    <div className="bullet"></div>
-                    <span>Packed</span>
-                    </div>
-                    <div
-                    className={`step ${["shipped", "outfordelivery", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
-                    >
-                    <div className="bullet"></div>
-                    <span>Shipped</span>
-                    </div>
-                    <div
-                    className={`step ${["outfordelivery", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
-                    >
-                    <div className="bullet"></div>
-                    <span>Out For Delivery</span>
-                    </div>
-                    <div
-                    className={`step ${orderDetails.order.orderstatus === "delivered" ? "active" : ""}`}
-                    >
-                    <div className="bullet"></div>
-                    <span>Delivered</span>
-                    </div>
-                </div>
+                  {/* Timeline */}
+                  <div className="order-timeline-wrapper">
+                    {orderDetails.order.orderstatus === "cancelled" ? (
+                      <div className="order-timeline">
+                        <div className="step pending active">
+                          <div className="bullet"></div>
+                          <span>Pending</span>
+                        </div>
+                        <div className="step cancelled active">
+                          <div className="bullet"></div>
+                          <span>Cancelled</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="order-timeline">
+                        <div
+                          className={`step pending ${["pending", "confirmed", "shipped", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
+                        >
+                          <div className="bullet"></div>
+                          <span>Pending</span>
+                        </div>
+                        <div
+                          className={`step confirmed ${["confirmed", "shipped", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
+                        >
+                          <div className="bullet"></div>
+                          <span>Confirmed</span>
+                        </div>
+                        <div
+                          className={`step shipped ${["shipped", "delivered"].includes(orderDetails.order.orderstatus) ? "active" : ""}`}
+                        >
+                          <div className="bullet"></div>
+                          <span>Shipped</span>
+                        </div>
+                        <div
+                          className={`step delivered ${orderDetails.order.orderstatus === "delivered" ? "active" : ""}`}
+                        >
+                          <div className="bullet"></div>
+                          <span>Delivered</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="drawer-grid">
+                  <div className="drawer-grid">
                     <div className="grid-main">
-                    {/* Customer Card */}
-                    <div className="info-card">
+                      {/* Customer Card */}
+                      <div className="info-card">
                         <h4 className="card-title">
-                        <MapPin size={16} /> Delivery Details
+                          <User size={16} /> Customer Information
                         </h4>
                         <div className="card-body">
-                        <div className="detail-item full">
-                            <span className="label">Delivery Address</span>
-                            <span className="val" style={{ whiteSpace: "pre-wrap" }}>
-                            {orderDetails.order.address}
+                          <div className="detail-item">
+                            <span className="label">Name</span>
+                            <span className="val">
+                              {orderDetails.order?.fullname || "N/A"}
                             </span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="label">Phone</span>
+                            <span className="val">
+                              <Phone size={14} /> {orderDetails.order?.mobilenumber || "N/A"}
+                            </span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="label">Email</span>
+                            <span className="val">
+                              <Mail size={14} /> {orderDetails.order?.email || "N/A"}
+                            </span>
+                          </div>
+                          <div className="detail-item full">
+                            <span className="label">Delivery Address</span>
+                            <span
+                              className="val"
+                              style={{ whiteSpace: "pre-wrap" }}
+                            >
+                              <MapPin size={14} /> {orderDetails.order?.address || "N/A"}
+                            </span>
+                          </div>
                         </div>
-                        </div>
-                    </div>
+                      </div>
 
-                    {/* Items List */}
-                    <div className="info-card">
+                      {/* Items List */}
+                      <div className="info-card">
                         <h4 className="card-title">
-                        <Package size={16} /> Order Items
+                          <Package size={16} /> Order Items
                         </h4>
                         <div className="items-list">
-                        {orderDetails.items && orderDetails.items.map((item) => (
-                            <div key={item.orderitemid} className="product-item" style={{ flexWrap: 'wrap' }}>
-                            <div className="p-img">
-                                {item.productimage ? (
-                                <img src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${item.productimage}`} alt={item.productname} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                                ) : (
-                                <Package size={20} />
-                                )}
-                            </div>
-                            <div className="p-info" style={{ flex: '1 1 200px' }}>
-                                <span className="p-name">{item.productname}</span>
-                                <span className="p-qty">Grams/Day: {item.gramsperday}g | Days: {item.dayspermonth} | Members: {item.familymembers}</span>
-                                <span className="p-qty" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Total: {item.totalquantitykg}kg</span>
-                            </div>
-                            <div className="p-price">
-                                ₹{item.totalprice}
-                            </div>
-                            </div>
-                        ))}
+                          {orderDetails.items &&
+                            orderDetails.items.map((item) => (
+                              <div
+                                key={item.orderitemid}
+                                className="product-item"
+                                style={{ flexWrap: "wrap" }}
+                              >
+                                <div className="p-img">
+                                  {item.productimage ? (
+                                    <img
+                                      src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${item.productimage}`}
+                                      alt={item.productname}
+                                      style={{
+                                        width: "40px",
+                                        height: "40px",
+                                        objectFit: "cover",
+                                        borderRadius: "4px",
+                                      }}
+                                    />
+                                  ) : (
+                                    <Package size={20} />
+                                  )}
+                                </div>
+                                <div
+                                  className="p-info"
+                                  style={{ flex: "1 1 200px" }}
+                                >
+                                  <span className="p-name">
+                                    {item.productname}
+                                  </span>
+                                  <span className="p-qty">
+                                    Grams/Day: {item.gramsperday}g | Days:{" "}
+                                    {item.dayspermonth} | Members:{" "}
+                                    {item.familymembers}
+                                  </span>
+                                  <span
+                                    className="p-qty"
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      color: "var(--text-muted)",
+                                    }}
+                                  >
+                                    Total: {item.totalquantitykg}kg
+                                  </span>
+                                </div>
+                                <div className="p-price">
+                                  ₹{item.totalprice}
+                                </div>
+                              </div>
+                            ))}
                         </div>
-                    </div>
+                      </div>
                     </div>
 
                     <div className="grid-side">
-                    {/* Summary */}
-                    <div className="summary-card">
+                      {/* Summary */}
+                      <div className="summary-card">
                         <h4>Price Summary</h4>
                         <div className="summary-list">
-                        <div className="row grand-total">
+                          <div className="row grand-total">
                             <span>Total Amount</span>
                             <span>₹{orderDetails.order.totalamount}</span>
+                          </div>
                         </div>
-                        </div>
-                    </div>
+                      </div>
 
-                    {/* Action Controls */}
-                    <div className="drawer-actions">
+                      {/* Action Controls */}
+                      <div className="drawer-actions">
                         <div className="action-group">
-                        <label>Update Status</label>
-                        <select className="status-select" value={orderDetails.order.orderstatus} disabled={orderDetails.order.orderstatus === "delivered"} onChange={(e) => handleStatusUpdate(selectedOrder.orderid, e.target.value)}>
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="processing">Processing</option>
-                            <option value="packed">Packed</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="outfordelivery">Out for Delivery</option>
-                            <option value="delivered">Delivered</option>
-                        </select>
+                          <label>Update Status</label>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: "8px",
+                            }}
+                          >
+                            <select
+                              className="status-select"
+                              value={
+                                selectedStatusChanges[
+                                orderDetails.order.orderid
+                                ] || orderDetails.order.orderstatus
+                              }
+                              disabled={
+                                orderDetails.order.orderstatus === "delivered" ||
+                                orderDetails.order.orderstatus === "cancelled"
+                              }
+                              onChange={(e) =>
+                                setSelectedStatusChanges({
+                                  ...selectedStatusChanges,
+                                  [orderDetails.order.orderid]: e.target.value,
+                                })
+                              }
+                            >
+                              <option value="pending">Pending</option>
+                              <option value="confirmed">Confirmed</option>
+                              <option value="shipped">Shipped</option>
+                              <option value="delivered">Delivered</option>
+                              <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button
+                              className="btn-primary"
+                              onClick={() =>
+                                handleStatusUpdate(
+                                  orderDetails.order.orderid,
+                                  selectedStatusChanges[
+                                  orderDetails.order.orderid
+                                  ] || orderDetails.order.orderstatus,
+                                )
+                              }
+                              disabled={
+                                !selectedStatusChanges[
+                                orderDetails.order.orderid
+                                ] ||
+                                selectedStatusChanges[
+                                orderDetails.order.orderid
+                                ] === orderDetails.order.orderstatus
+                              }
+                            >
+                              {processingId === orderDetails.order.orderid ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                "Confirm Status Update"
+                              )}
+                            </button>
+                          </div>
                         </div>
-                        <div className="action-group">
-                        <label>Payment Status</label>
-                        <div className="payment-toggle">
-                            <span>Mark as Paid</span>
-                            <input
-                            type="checkbox"
-                            defaultChecked={orderDetails.order.paymentstatus === 'paid'}
-                            disabled
-                            />
-                        </div>
-                        </div>
+                      </div>
                     </div>
-                    </div>
-                </div>
+                  </div>
                 </>
               ) : (
                 <div className="empty-state">

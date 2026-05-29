@@ -29,6 +29,8 @@ const EditProduct = () => {
   const [deletingImage, setDeletingImage] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [healthGoalsList, setHealthGoalsList] = useState([]);
+  const [selectedHealthGoals, setSelectedHealthGoals] = useState([]);
 
   const [newMainImage, setNewMainImage] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState({
@@ -66,6 +68,7 @@ const EditProduct = () => {
     fat: 0,
     carbohydrates: 0,
     country: "India",
+    isNewArrivals: false,
   });
 
   useEffect(() => {
@@ -85,6 +88,17 @@ const EditProduct = () => {
           setCategories(catData);
         }
 
+        // Fetch Health Goals
+        try {
+          const healthRes = await API.post(APIROUTES.GETHEALTHGOALS);
+          const healthData = healthRes.data?.data || healthRes.data;
+          if (Array.isArray(healthData)) {
+            setHealthGoalsList(healthData);
+          }
+        } catch (err) {
+          console.error("Failed to load health goals:", err);
+        }
+
         // Fetch Product List for bid and find matching product
         const prodRes = await API.post(APIROUTES.GETALLPRODUCTS, { bid });
         const prodList = prodRes.data?.data || prodRes.data;
@@ -92,6 +106,15 @@ const EditProduct = () => {
           const product = prodList.find((p) => p.productid === Number(id));
           if (product) {
             setProductData(product);
+
+            if (product.healthgoalids) {
+              try {
+                const parsed = typeof product.healthgoalids === "string" ? JSON.parse(product.healthgoalids) : product.healthgoalids;
+                setSelectedHealthGoals(Array.isArray(parsed) ? parsed : []);
+              } catch (e) {
+                setSelectedHealthGoals([]);
+              }
+            }
 
             // Fetch Subcategories for its category
             if (product.categoryid) {
@@ -250,6 +273,7 @@ const EditProduct = () => {
       // Update product using ADDPRODUCT API passing productid
       const productPayload = {
         ...productData,
+        healthgoalids: selectedHealthGoals,
         productid: Number(id),
         bid: Number(bid),
         productimage: mainImagePath,
@@ -635,6 +659,33 @@ const EditProduct = () => {
                 </div>
               </div>
             </section>
+
+            {/* Health Goals */}
+            <section className="form-section">
+              <h3>Health Goals</h3>
+              <div className="health-goals-container" style={{ display: "flex", flexWrap: "wrap", gap: "15px" }}>
+                {healthGoalsList.length > 0 ? (
+                  healthGoalsList.map((goal) => (
+                    <label key={goal.goalid} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedHealthGoals.includes(goal.goalid)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedHealthGoals([...selectedHealthGoals, goal.goalid]);
+                          } else {
+                            setSelectedHealthGoals(selectedHealthGoals.filter(id => id !== goal.goalid));
+                          }
+                        }}
+                      />
+                      <span>{goal.goalname}</span>
+                    </label>
+                  ))
+                ) : (
+                  <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>No health goals available.</span>
+                )}
+              </div>
+            </section>
           </div>
 
           <div className="form-side">
@@ -848,6 +899,22 @@ const EditProduct = () => {
                         setProductData({
                           ...productData,
                           isBestSeller: e.target.checked,
+                        })
+                      }
+                    />
+                    <span className="slider"></span>
+                  </label>
+                </div>
+                <div className="switch-container">
+                  <span className="switch-label">New Arrival</span>
+                  <label className="switch">
+                    <input
+                      type="checkbox"
+                      checked={productData.isNewArrivals}
+                      onChange={(e) =>
+                        setProductData({
+                          ...productData,
+                          isNewArrivals: e.target.checked,
                         })
                       }
                     />

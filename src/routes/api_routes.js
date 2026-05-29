@@ -27,6 +27,7 @@ const APIROUTES = {
   ADDADDRESSINFO: "/business/addaddressinfo",
   GETADDRESSINFO: "/business/getaddressinfo",
   ADDBANKINFO: "/business/addbankinfo",
+  UPDATEBANKINFO: "/business/updatebankinfo",
   GETBANKINFO: "/business/getbankinfo",
   ADDGIFTCARD: "/product/add-gift-card",
   DELETEGIFTCARD: "/product/delete-gift-card",
@@ -36,10 +37,11 @@ const APIROUTES = {
   PRODUCTSTOCKS: "/home/product-stocks",
   UPDATEPRODUCTSTOCK: "/home/update-product-stock",
   ORDERSTATUSUPDATE: "/order/update-status",
-  CALCULATORmERCHANTORDERS: "/calculator/merchant-orders",
-  CALCULATORMERCHANTORDERS: "/calculator/merchant-orders",
-  CALCULATORORDERDETAILS: "/calculator/order-detail",
-  CALCULATORORDERSTATUSUPDATE: "/calculator/update-order-status",
+  ORDERITEMTATUSUPDATE: "/order/update-item-status",
+  CALCULATORMERCHANTORDERS: "/monthly/merchant-orders",
+  CALCULATORORDERDETAILS: "/monthly/order-detail",
+  CALCULATORORDERSTATUSUPDATE: "/monthly/update-order-status",
+  GETHEALTHGOALS: "/goal/gethealth-goals",
 
   // uploads
   UPLOADPRODUCTIMAGE: "/business/upload-product-image",

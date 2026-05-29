@@ -253,8 +253,14 @@ const ListProducts = () => {
                     </td>
                     <td>
                       <div className="p-cell-price">
-                        <span className="p-offer">₹{p.sellingprice}</span>
-                        <span className="p-original">₹{p.price}</span>
+                        {p.sellingprice > 0 ? (
+                          <>
+                            <span className="p-offer">₹{p.sellingprice}</span>
+                            <span className="p-original" style={{ textDecoration: "line-through" }}>₹{p.price}</span>
+                          </>
+                        ) : (
+                          <span className="p-offer">₹{p.price}</span>
+                        )}
                       </div>
                     </td>
                     <td>
