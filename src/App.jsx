@@ -27,6 +27,12 @@ import WebsiteReviews from './pages/WebsiteReviews';
 import Subcategories from './pages/Subcategories';
 import { BusinessProvider } from './store/business/BusinessContext';
 
+import TradizionsUsers from './pages/TradizionsUsers';
+import TradizionsContacts from './pages/TradizionsContacts';
+import TradizionsGoals from './pages/TradizionsGoals';
+import TradizionsBanners from './pages/TradizionsBanners';
+import TradizionsKural from './pages/TradizionsKural';
+
 function App() {
   return (
     <BusinessProvider>
@@ -62,6 +68,11 @@ function App() {
             <Route path="products/detail/:id" element={<ProductDetail />} />
             <Route path="products/list" element={<ListProducts />} />
             <Route path="products/reviews" element={<Reviews />} />
+            <Route path="users" element={<TradizionsUsers />} />
+            <Route path="contacts" element={<TradizionsContacts />} />
+            <Route path="goals" element={<TradizionsGoals />} />
+            <Route path="banners" element={<TradizionsBanners />} />
+            <Route path="kural" element={<TradizionsKural />} />
           </Route>
 
           {/* Fallback */}

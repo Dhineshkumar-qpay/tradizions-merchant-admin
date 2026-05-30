@@ -1,5 +1,6 @@
 const APIROUTES = {
   SENDOTP: "/auth/sendotp",
+  MENUPAGES: "/menu/merchant-menus",
   VERIFYOTP: "/auth/verifyotp",
   ADDCATEGORY: "/category/addcategory",
   GETALLCATEGORIES: "/category/getallcategories",
@@ -41,7 +42,19 @@ const APIROUTES = {
   CALCULATORMERCHANTORDERS: "/monthly/merchant-orders",
   CALCULATORORDERDETAILS: "/monthly/order-detail",
   CALCULATORORDERSTATUSUPDATE: "/monthly/update-order-status",
+  
+  // New modules API routes
+  GETALLUSERS: "/admin/getallusers",
+  GETCONTACTS: "/contact/get-contacts",
+  DELETECONTACT: "/contact/delete-contactus",
   GETHEALTHGOALS: "/goal/gethealth-goals",
+  ADDHEALTHGOAL: "/goal/addhealth-goal",
+  DELETEHEALTHGOAL: "/goal/delete-goal",
+  GETKURALS: "/kural/get-kural",
+  ADDKURAL: "/kural/addthinamorukural",
+  GETALLBANNER: "/banner/all-banners",
+  ADDBANNER: "/banner/addbanner",
+  DELETEBANNER: "/banner/delete-banner",
 
   // uploads
   UPLOADPRODUCTIMAGE: "/business/upload-product-image",

@@ -22,6 +22,7 @@ import {
   Receipt,
   Briefcase,
   Calendar,
+  Book,
 } from "lucide-react";
 import "./Layout.css";
 
@@ -64,7 +65,7 @@ const Layout = () => {
       <aside className={`sidebar ${showMobileMenu ? "show" : ""}`}>
         <div className="sidebar-brand">
           <div className="brand-content">
-            <img src="src/assets/t-logo.png" alt="t-logo" height={40} width={40}/>
+            <img src="src/assets/t-logo.png" alt="t-logo" height={40} width={40} />
             {!isSidebarCollapsed && <span>Tradizions Admin</span>}
           </div>
           <button
@@ -298,6 +299,29 @@ const Layout = () => {
                 <Globe size={20} />
                 {!isSidebarCollapsed && <span>Website Reviews</span>}
               </NavLink> */}
+            </div>
+            <div className="nav-group">
+              <span className="group-label">Tradizions Modules</span>
+              <NavLink to="/users" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+                <User size={20} />
+                {!isSidebarCollapsed && <span>User List</span>}
+              </NavLink>
+              <NavLink to="/contacts" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+                <Mail size={20} />
+                {!isSidebarCollapsed && <span>Contacts</span>}
+              </NavLink>
+              <NavLink to="/goals" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+                <TreePine size={20} />
+                {!isSidebarCollapsed && <span>Health Goals</span>}
+              </NavLink>
+              <NavLink to="/banners" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+                <Layers size={20} />
+                {!isSidebarCollapsed && <span>Seasonal Banners</span>}
+              </NavLink>
+              <NavLink to="/kural" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
+                <Book size={20} />
+                {!isSidebarCollapsed && <span>Thinam Oru Kural</span>}
+              </NavLink>
             </div>
           </nav>
         </div>
