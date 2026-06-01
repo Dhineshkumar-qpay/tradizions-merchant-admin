@@ -26,12 +26,13 @@ import Contact from './pages/Contact';
 import WebsiteReviews from './pages/WebsiteReviews';
 import Subcategories from './pages/Subcategories';
 import { BusinessProvider } from './store/business/BusinessContext';
-
 import TradizionsUsers from './pages/TradizionsUsers';
 import TradizionsContacts from './pages/TradizionsContacts';
 import TradizionsGoals from './pages/TradizionsGoals';
 import TradizionsBanners from './pages/TradizionsBanners';
 import TradizionsKural from './pages/TradizionsKural';
+import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   return (
@@ -58,11 +59,11 @@ function App() {
             <Route path="categories/list" element={<ListCategories />} />
             <Route path="categories/add" element={<AddCategory />} />
             <Route path="subcategories" element={<Subcategories />} />
-            <Route path="gift-cards/list" element={<ListGiftCards />} />
-            <Route path="gift-cards/add" element={<AddGiftCard />} />
-            <Route path="gift-cards/card" element={<ManageGiftCards />} />
-            <Route path="gift-cards/detail/:id" element={<GiftCardDetail />} />
-            <Route path="gift-cards/edit/:id" element={<EditGiftCard />} />
+            <Route path="gift-products/list" element={<ListGiftCards />} />
+            <Route path="gift-products/add" element={<AddGiftCard />} />
+            <Route path="giftcard/add" element={<ManageGiftCards />} />
+            <Route path="gift-products/detail/:id" element={<GiftCardDetail />} />
+            <Route path="gift-products/edit/:id" element={<EditGiftCard />} />
             <Route path="products/add" element={<AddProduct />} />
             <Route path="products/edit/:id" element={<EditProduct />} />
             <Route path="products/detail/:id" element={<ProductDetail />} />
@@ -79,6 +80,26 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={true}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        toastStyle={{
+          borderRadius: "12px",
+          fontSize: "14px",
+          fontWeight: "500",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+        }}
+        bodyStyle={{
+          padding: "4px 0",
+        }}
+      />
     </BusinessProvider>
   );
 }

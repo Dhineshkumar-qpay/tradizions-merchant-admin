@@ -35,6 +35,8 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [processingId, setProcessingId] = useState(null);
+  const [previewGiftCard, setPreviewGiftCard] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [selectedStatusChanges, setSelectedStatusChanges] = useState({});
   const [selectedItemStatusChanges, setSelectedItemStatusChanges] = useState(
     {},
@@ -1014,6 +1016,72 @@ const Orders = () => {
                               </div>
                             )}
 
+                            {/* Gift Card Data */}
+                            {item.giftcard && (
+                              <div
+                                style={{
+                                  width: "100%",
+                                  padding: "10px",
+                                  backgroundColor: "#fff0f6",
+                                  borderRadius: "6px",
+                                  border: "1px dashed #f472b6",
+                                  marginBottom: "10px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    marginBottom: "8px",
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                    color: "#db2777",
+                                  }}
+                                >
+                                  <Gift size={14} /> {item.giftcard.cardname}
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    gap: "12px",
+                                  }}
+                                >
+                                  {item.giftcard.cardimage && (
+                                    <img
+                                      src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${item.giftcard.cardimage}`}
+                                      alt={item.giftcard.cardname}
+                                      style={{
+                                        width: "60px",
+                                        height: "60px",
+                                        objectFit: "cover",
+                                        borderRadius: "4px",
+                                        border: "1px solid #fce7f3",
+                                      }}
+                                    />
+                                  )}
+                                  <div
+                                    style={{
+                                      fontSize: "12px",
+                                      color: "var(--text-muted)",
+                                      lineHeight: "1.5",
+                                      flex: 1,
+                                    }}
+                                  >
+                                    <div><strong>Sender:</strong> {item.giftcard.sendername}</div>
+                                    <div style={{ marginTop: "4px" }}><strong>Message:</strong> "{item.giftcard.giftmessage}"</div>
+                                  </div>
+                                  <button
+                                    onClick={() => setPreviewGiftCard(item.giftcard)}
+                                    className="btn-primary"
+                                    style={{ padding: "6px 12px", fontSize: "11px", alignSelf: "center", borderRadius: "6px", background: "#db2777", border: "none", color: "white", cursor: "pointer", fontWeight: "600" }}
+                                  >
+                                    View Gift Card
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+
                             {/* Individual Item Status Update */}
                             {item.orderitemid && (
                               <div
@@ -1104,47 +1172,7 @@ const Orders = () => {
                     </div>
                   </div>
 
-                  {/* Gift Section */}
-                  {selectedOrder.itemtype === "gift" && (
-                    <div className="info-card gift-card">
-                      <h4 className="card-title">
-                        <Gift size={16} /> Gift Specification
-                      </h4>
-                      <div className="gift-details">
-                        <div className="gift-box-title">
-                          {selectedOrder.giftcardname}
-                        </div>
-                        <div className="gift-message">
-                          "{selectedOrder.giftmessage}"
-                        </div>
-                        {selectedOrder.giftcardimage && (
-                          <div
-                            className="gift-img"
-                            style={{ marginTop: "10px", marginBottom: "10px" }}
-                          >
-                            <img
-                              src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${selectedOrder.giftcardimage}`}
-                              alt={selectedOrder.giftcardname}
-                              style={{
-                                width: "100px",
-                                height: "100px",
-                                objectFit: "cover",
-                                borderRadius: "4px",
-                              }}
-                            />
-                          </div>
-                        )}
-                        <div className="gift-meta">
-                          <span>
-                            Receiver: <strong>{selectedOrder.username}</strong>
-                          </span>
-                          <span>
-                            Date: <strong>{selectedOrder.odredate}</strong>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* Old Global Gift Section Removed */}
                 </div>
 
                 <div className="grid-side">
@@ -1316,7 +1344,343 @@ const Orders = () => {
           </div>
         </div>
       )}
+
+      {/* Gift Card Preview Modal */}
+      {previewGiftCard && (
+        <GiftCardEditor previewGiftCard={previewGiftCard} onClose={() => setPreviewGiftCard(null)} />
+      )}
     </div>
+  );
+};
+
+const GiftCardEditor = ({ previewGiftCard, onClose }) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const containerRef = React.useRef(null);
+
+  const [msgConfig, setMsgConfig] = useState({
+    x: 50, y: 40,
+    size: 24, // Base size
+    color: "#333333",
+    family: "'Playfair Display', serif, sans-serif",
+    weight: "700",
+    align: "center"
+  });
+
+  const [senderConfig, setSenderConfig] = useState({
+    x: 80, y: 80,
+    size: 16, // Base size
+    color: "#444444",
+    family: "'Playfair Display', serif, sans-serif",
+    weight: "600",
+    align: "right"
+  });
+
+  const [activeTab, setActiveTab] = useState('msg');
+
+  const activeConfig = activeTab === 'msg' ? msgConfig : senderConfig;
+  const updateConfig = (key, value) => {
+    if (activeTab === 'msg') {
+      setMsgConfig(prev => ({ ...prev, [key]: value }));
+    } else {
+      setSenderConfig(prev => ({ ...prev, [key]: value }));
+    }
+  };
+
+  const [draggingTarget, setDraggingTarget] = useState(null);
+  
+  const handleMouseDown = (e, target) => {
+    setDraggingTarget(target);
+    setActiveTab(target);
+    e.preventDefault();
+  };
+
+  const handleMouseMove = React.useCallback((e) => {
+    if (!draggingTarget || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    let newX = ((e.clientX - rect.left) / rect.width) * 100;
+    let newY = ((e.clientY - rect.top) / rect.height) * 100;
+    newX = Math.max(0, Math.min(100, newX));
+    newY = Math.max(0, Math.min(100, newY));
+
+    if (draggingTarget === 'msg') {
+      setMsgConfig(prev => ({ ...prev, x: newX, y: newY }));
+    } else {
+      setSenderConfig(prev => ({ ...prev, x: newX, y: newY }));
+    }
+  }, [draggingTarget]);
+
+  const handleMouseUp = React.useCallback(() => {
+    setDraggingTarget(null);
+  }, []);
+
+  React.useEffect(() => {
+    if (draggingTarget) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      }
+    }
+  }, [draggingTarget, handleMouseMove, handleMouseUp]);
+
+  const downloadImage = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = `${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage}`;
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => {
+            img.crossOrigin = "";
+            img.src = `${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage}?not-anonymous`;
+            img.onload = resolve;
+            img.onerror = reject;
+        };
+      });
+      
+      const canvasWidth = 800;
+      const canvasHeight = (img.height / img.width) * canvasWidth;
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+      
+      ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+      
+      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // Draw Message
+      ctx.textAlign = msgConfig.align;
+      ctx.textBaseline = "middle";
+      const msgFontSize = msgConfig.size * (canvasWidth / 400); 
+      ctx.font = `${msgConfig.weight} ${msgFontSize}px ${msgConfig.family}`;
+      ctx.fillStyle = msgConfig.color;
+      ctx.shadowColor = "rgba(255,255,255,0.8)";
+      ctx.shadowBlur = 4;
+      
+      const msgX = (msgConfig.x / 100) * canvasWidth;
+      const msgY = (msgConfig.y / 100) * canvasHeight;
+      
+      const words = (previewGiftCard.giftmessage || "").split(' ');
+      let line = '';
+      const lines = [];
+      const maxWidth = canvasWidth * 0.8;
+      
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          lines.push(line);
+          line = words[n] + ' ';
+        } else {
+          line = testLine;
+        }
+      }
+      lines.push(line);
+      
+      let y = msgY - ((lines.length - 1) * msgFontSize * 1.2) / 2;
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], msgX, y);
+        y += msgFontSize * 1.2;
+      }
+      
+      // Draw Sender
+      ctx.textAlign = senderConfig.align;
+      ctx.textBaseline = "middle";
+      const senderFontSize = senderConfig.size * (canvasWidth / 400);
+      ctx.font = `italic ${senderConfig.weight} ${senderFontSize}px ${senderConfig.family}`;
+      ctx.fillStyle = senderConfig.color;
+      
+      const senderX = (senderConfig.x / 100) * canvasWidth;
+      const senderY = (senderConfig.y / 100) * canvasHeight;
+      
+      ctx.fillText(`- ${previewGiftCard.sendername}`, senderX, senderY);
+      
+      const dataUrl = canvas.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `giftcard_${previewGiftCard.giftcardid || 'preview'}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+    } catch (err) {
+      console.error("Failed to generate gift card image", err);
+      alert("Could not generate the image.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  return (
+     <div className="modal-overlay" style={{ zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div
+          className="modal-content animate-pop"
+          onClick={(e) => e.stopPropagation()}
+          style={{ width: "95%", maxWidth: "800px", padding: 0, overflow: "hidden", borderRadius: "12px", background: "#fff", display: "flex", flexDirection: "column" }}
+        >
+          {/* Header */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", borderBottom: "1px solid #eee" }}>
+            <h3 style={{ margin: 0, fontSize: "16px", color: "var(--text-main)" }}>Customize Gift Card</h3>
+            <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#666" }}><X size={20} /></button>
+          </div>
+
+          {/* Body */}
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            
+            {/* Preview Column */}
+            <div style={{ flex: "1 1 400px", padding: "20px", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", borderRight: "1px solid #eee" }}>
+               <div 
+                 ref={containerRef}
+                 style={{
+                   position: "relative",
+                   width: "100%",
+                   aspectRatio: "1.5 / 1",
+                   backgroundImage: `url(${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage})`,
+                   backgroundSize: "cover",
+                   backgroundPosition: "center",
+                   borderRadius: "8px",
+                   overflow: "hidden",
+                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                   userSelect: "none"
+                 }}
+               >
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(255,255,255,0.4)", pointerEvents: "none" }}></div>
+                  
+                  {/* Draggable Message */}
+                  <div 
+                    onMouseDown={(e) => handleMouseDown(e, 'msg')}
+                    style={{ 
+                      position: "absolute", 
+                      left: `${msgConfig.x}%`, 
+                      top: `${msgConfig.y}%`, 
+                      transform: `translate(${msgConfig.align === 'center' ? '-50%' : msgConfig.align === 'right' ? '-100%' : '0'}, -50%)`,
+                      textAlign: msgConfig.align,
+                      cursor: draggingTarget === 'msg' ? "grabbing" : "grab",
+                      width: "80%",
+                      zIndex: 10,
+                      border: activeTab === 'msg' ? "1px dashed #db2777" : "1px dashed transparent"
+                    }}
+                  >
+                    <p style={{ 
+                      fontFamily: msgConfig.family, 
+                      fontSize: `clamp(12px, ${msgConfig.size * 0.15}vw, ${msgConfig.size}px)`, 
+                      fontWeight: msgConfig.weight, 
+                      color: msgConfig.color, 
+                      margin: 0,
+                      textShadow: "0 1px 2px rgba(255,255,255,0.8)"
+                    }}>
+                      {previewGiftCard.giftmessage}
+                    </p>
+                  </div>
+
+                  {/* Draggable Sender */}
+                  <div 
+                    onMouseDown={(e) => handleMouseDown(e, 'sender')}
+                    style={{ 
+                      position: "absolute", 
+                      left: `${senderConfig.x}%`, 
+                      top: `${senderConfig.y}%`, 
+                      transform: `translate(${senderConfig.align === 'center' ? '-50%' : senderConfig.align === 'right' ? '-100%' : '0'}, -50%)`,
+                      textAlign: senderConfig.align,
+                      cursor: draggingTarget === 'sender' ? "grabbing" : "grab",
+                      zIndex: 10,
+                      border: activeTab === 'sender' ? "1px dashed #db2777" : "1px dashed transparent"
+                    }}
+                  >
+                    <p style={{ 
+                      fontFamily: senderConfig.family, 
+                      fontSize: `clamp(10px, ${senderConfig.size * 0.15}vw, ${senderConfig.size}px)`, 
+                      fontWeight: senderConfig.weight, 
+                      color: senderConfig.color, 
+                      margin: 0,
+                      fontStyle: "italic",
+                      textShadow: "0 1px 2px rgba(255,255,255,0.8)"
+                    }}>
+                      - {previewGiftCard.sendername}
+                    </p>
+                  </div>
+               </div>
+               
+               <p style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>* Drag text to reposition</p>
+            </div>
+
+            {/* Controls Column */}
+            <div style={{ flex: "1 1 250px", padding: "20px", display: "flex", flexDirection: "column", gap: "15px" }}>
+               <div style={{ display: "flex", borderBottom: "1px solid #ddd", marginBottom: "10px" }}>
+                  <button 
+                    style={{ flex: 1, padding: "8px", border: "none", background: activeTab === 'msg' ? "#fff0f6" : "transparent", color: activeTab === 'msg' ? "#db2777" : "#666", fontWeight: "600", cursor: "pointer", borderBottom: activeTab === 'msg' ? "2px solid #db2777" : "none" }}
+                    onClick={() => setActiveTab('msg')}
+                  >Message</button>
+                  <button 
+                    style={{ flex: 1, padding: "8px", border: "none", background: activeTab === 'sender' ? "#fff0f6" : "transparent", color: activeTab === 'sender' ? "#db2777" : "#666", fontWeight: "600", cursor: "pointer", borderBottom: activeTab === 'sender' ? "2px solid #db2777" : "none" }}
+                    onClick={() => setActiveTab('sender')}
+                  >Sender</button>
+               </div>
+
+               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                 <label style={{ fontSize: "12px", fontWeight: "600" }}>Font Family</label>
+                 <select value={activeConfig.family} onChange={e => updateConfig('family', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd" }}>
+                   <option value="'Playfair Display', serif, sans-serif">Playfair Display</option>
+                   <option value="Inter, sans-serif">Inter</option>
+                   <option value="Arial, sans-serif">Arial</option>
+                   <option value="Georgia, serif">Georgia</option>
+                   <option value="'Courier New', monospace">Courier New</option>
+                 </select>
+
+                 <label style={{ fontSize: "12px", fontWeight: "600" }}>Font Size ({activeConfig.size}px)</label>
+                 <input type="range" min="10" max="60" value={activeConfig.size} onChange={e => updateConfig('size', parseInt(e.target.value))} />
+
+                 <div style={{ display: "flex", gap: "10px" }}>
+                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                     <label style={{ fontSize: "12px", fontWeight: "600" }}>Color</label>
+                     <input type="color" value={activeConfig.color} onChange={e => updateConfig('color', e.target.value)} style={{ width: "100%", height: "36px", border: "1px solid #ddd", borderRadius: "4px", padding: 0 }} />
+                   </div>
+                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                     <label style={{ fontSize: "12px", fontWeight: "600" }}>Weight</label>
+                     <select value={activeConfig.weight} onChange={e => updateConfig('weight', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
+                       <option value="400">Normal</option>
+                       <option value="600">Semi Bold</option>
+                       <option value="700">Bold</option>
+                     </select>
+                   </div>
+                 </div>
+
+                 <label style={{ fontSize: "12px", fontWeight: "600" }}>Alignment</label>
+                 <div style={{ display: "flex", gap: "5px" }}>
+                   {['left', 'center', 'right'].map(align => (
+                     <button 
+                       key={align}
+                       onClick={() => updateConfig('align', align)}
+                       style={{ flex: 1, padding: "6px", background: activeConfig.align === align ? "#db2777" : "#f1f5f9", color: activeConfig.align === align ? "white" : "#333", border: "none", borderRadius: "4px", cursor: "pointer", textTransform: "capitalize" }}
+                     >
+                       {align}
+                     </button>
+                   ))}
+                 </div>
+               </div>
+
+               <div style={{ marginTop: "auto", paddingTop: "20px" }}>
+                 <button 
+                   className="btn-primary" 
+                   onClick={downloadImage}
+                   style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", background: "#db2777", border: "none", padding: "12px" }}
+                   disabled={isDownloading}
+                 >
+                   {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                   {isDownloading ? "Generating..." : "Download Final Image"}
+                 </button>
+               </div>
+            </div>
+          </div>
+        </div>
+     </div>
   );
 };
 

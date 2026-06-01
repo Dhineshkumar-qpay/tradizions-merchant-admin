@@ -1,6 +1,5 @@
 const APIROUTES = {
   SENDOTP: "/auth/sendotp",
-  MENUPAGES: "/menu/merchant-menus",
   VERIFYOTP: "/auth/verifyotp",
   ADDCATEGORY: "/category/addcategory",
   GETALLCATEGORIES: "/category/getallcategories",
@@ -44,6 +43,7 @@ const APIROUTES = {
   CALCULATORORDERSTATUSUPDATE: "/monthly/update-order-status",
   
   // New modules API routes
+  MENUPAGES: "/menu/merchant-menus",
   GETALLUSERS: "/admin/getallusers",
   GETCONTACTS: "/contact/get-contacts",
   DELETECONTACT: "/contact/delete-contactus",

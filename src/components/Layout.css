@@ -154,6 +154,10 @@
     box-shadow: 0 4px 12px rgba(85, 107, 47, 0.2);
 }
 
+.nav-link.active img, .sub-link.active img {
+    filter: brightness(0) invert(1);
+}
+
 .sub-link {
     display: flex;
     align-items: center;
@@ -173,9 +177,9 @@
 }
 
 .sub-link.active {
-    color: var(--primary);
+    color: var(--white);
     font-weight: 600;
-    background: #f0f7e9;
+    background: var(--primary);
 }
 
 /* Dropdown Accordion */

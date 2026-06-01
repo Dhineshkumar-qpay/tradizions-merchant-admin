@@ -64,7 +64,10 @@ const TradizionsKural = () => {
             <div className="subcategory-horizontal-form">
               <div className="form-group-custom" style={{ flex: 1 }}>
                 <label>JSON File (kurals) *</label>
-                <input type="file" accept=".json" required onChange={e => setJsonFile(e.target.files[0])} />
+                <input type="file" accept=".json" required onChange={e => {
+                  setJsonFile(e.target.files[0])
+                  console.log("Selected file:", e.target.files[0]);
+                }} />
                 <span style={{ fontSize: '11px', color: '#888', marginTop: '4px', display: 'block' }}>Only .json format is allowed.</span>
               </div>
               <button type="submit" className="btn-primary form-grid-submit" disabled={loading}>

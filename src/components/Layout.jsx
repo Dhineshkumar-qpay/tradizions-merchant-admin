@@ -1,29 +1,17 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate, Navigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Layers,
-  Package,
-  PlusCircle,
-  List,
   LogOut,
   User,
   Search,
   Bell,
-  Gift,
-  ShoppingCart,
-  TreePine,
   ChevronDown,
   ChevronLeft,
   X,
-  Star,
-  Mail,
-  Globe,
-  Receipt,
-  Briefcase,
-  Calendar,
-  Book,
+  List
 } from "lucide-react";
+import { API } from "../service/api_service";
+import { APIROUTES } from "../routes/api_routes";
 import "./Layout.css";
 
 const Layout = () => {
@@ -34,10 +22,25 @@ const Layout = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const [showMobileMenu, setShowMobileMenu] = React.useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
-  const [expandedMenu, setExpandedMenu] = React.useState("products");
-  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [expandedMenu, setExpandedMenu] = useState(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [menus, setMenus] = useState([]);
+
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const res = await API.post(APIROUTES.MENUPAGES);
+        if (res.data && res.data.statusCode === 200 && res.data.data) {
+          setMenus(res.data.data.assignedmenus || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch menus", err);
+      }
+    };
+    fetchMenus();
+  }, []);
 
   const toggleMenu = (menuName) => {
     if (isSidebarCollapsed) setIsSidebarCollapsed(false);
@@ -48,6 +51,9 @@ const Layout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
+
+  // Helper function to format paths correctly
+  const formatPath = (key) => key.startsWith('/') ? key : `/${key}`;
 
   return (
     <div
@@ -86,242 +92,52 @@ const Layout = () => {
           <nav className="sidebar-nav">
             <div className="nav-group">
               <span className="group-label">Main Menu</span>
-              <NavLink
-                to="/dashboard"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <LayoutDashboard size={20} />
-                {!isSidebarCollapsed && <span>Dashboard</span>}
-              </NavLink>
-              <NavLink
-                to="/orders"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <ShoppingCart size={20} />
-                {!isSidebarCollapsed && <span>Orders</span>}
-              </NavLink>
-              <NavLink
-                to="/monthly-orders"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <Calendar size={20} />
-                {!isSidebarCollapsed && <span>Monthly Orders</span>}
-              </NavLink>
-            </div>
-
-            <div className="nav-group">
-              <span className="group-label">Catalog</span>
-              <div
-                className={`nav-link-dropdown ${expandedMenu === "categories" ? "expanded" : ""}`}
-              >
-                <div
-                  className="nav-link parent"
-                  onClick={() => toggleMenu("categories")}
-                >
-                  <Layers size={20} />
-                  {!isSidebarCollapsed && <span>Categories</span>}
-                  {!isSidebarCollapsed && (
-                    <ChevronDown size={16} className="chevron-icon" />
+              {menus.map((menu) => (
+                <React.Fragment key={menu.menuid}>
+                  {menu.children && menu.children.length > 0 ? (
+                    <div
+                      className={`nav-link-dropdown ${expandedMenu === menu.menukey ? "expanded" : ""}`}
+                    >
+                      <div
+                        className="nav-link parent"
+                        onClick={() => toggleMenu(menu.menukey)}
+                      >
+                        <img src={menu.icon} alt={menu.menuname} style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                        {!isSidebarCollapsed && <span>{menu.menuname}</span>}
+                        {!isSidebarCollapsed && (
+                          <ChevronDown size={16} className="chevron-icon" />
+                        )}
+                      </div>
+                      {!isSidebarCollapsed && (
+                        <div className="dropdown-items">
+                          {menu.children.map((child) => (
+                            <NavLink
+                              key={child.menuid}
+                              to={formatPath(child.menukey)}
+                              className={({ isActive }) =>
+                                isActive ? "sub-link active" : "sub-link"
+                              }
+                            >
+                              <img src={child.icon} alt={child.menuname} style={{ width: 16, height: 16, objectFit: 'contain' }} />
+                              <span>{child.menuname}</span>
+                            </NavLink>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <NavLink
+                      to={formatPath(menu.menukey)}
+                      className={({ isActive }) =>
+                        isActive ? "nav-link active" : "nav-link"
+                      }
+                    >
+                      <img src={menu.icon} alt={menu.menuname} style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                      {!isSidebarCollapsed && <span>{menu.menuname}</span>}
+                    </NavLink>
                   )}
-                </div>
-                {!isSidebarCollapsed && (
-                  <div className="dropdown-items">
-                    <NavLink
-                      to="/categories/add"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <PlusCircle size={16} />
-                      <span>Add Category</span>
-                    </NavLink>
-                    <NavLink
-                      to="/categories/list"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <List size={16} />
-                      <span>List Categories</span>
-                    </NavLink>
-                    <NavLink
-                      to="/subcategories"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <Layers size={16} />
-                      <span>Subcategories</span>
-                    </NavLink>
-                  </div>
-                )}
-              </div>
-
-              <div
-                className={`nav-link-dropdown ${expandedMenu === "gifts" ? "expanded" : ""}`}
-              >
-                <div
-                  className="nav-link parent"
-                  onClick={() => toggleMenu("gifts")}
-                >
-                  <Gift size={20} />
-                  {!isSidebarCollapsed && <span>Gift Products</span>}
-                  {!isSidebarCollapsed && (
-                    <ChevronDown size={16} className="chevron-icon" />
-                  )}
-                </div>
-                {!isSidebarCollapsed && (
-                  <div className="dropdown-items">
-                    <NavLink
-                      to="/gift-cards/add"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <PlusCircle size={16} />
-                      <span>Add Gift Product</span>
-                    </NavLink>
-                    <NavLink
-                      to="/gift-cards/card"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <PlusCircle size={16} />
-                      <span>Add Gift Card</span>
-                    </NavLink>
-                    <NavLink
-                      to="/gift-cards/list"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <List size={16} />
-                      <span>List Gift Products</span>
-                    </NavLink>
-                  </div>
-                )}
-              </div>
-
-              <div
-                className={`nav-link-dropdown ${expandedMenu === "products" ? "expanded" : ""}`}
-              >
-                <div
-                  className="nav-link parent"
-                  onClick={() => toggleMenu("products")}
-                >
-                  <Package size={20} />
-                  {!isSidebarCollapsed && <span>Products</span>}
-                  {!isSidebarCollapsed && (
-                    <ChevronDown size={16} className="chevron-icon" />
-                  )}
-                </div>
-                {!isSidebarCollapsed && (
-                  <div className="dropdown-items">
-                    <NavLink
-                      to="/products/add"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <PlusCircle size={16} />
-                      <span>Add Product</span>
-                    </NavLink>
-                    <NavLink
-                      to="/products/list"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <List size={16} />
-                      <span>List Products</span>
-                    </NavLink>
-                    <NavLink
-                      to="/products/reviews"
-                      className={({ isActive }) =>
-                        isActive ? "sub-link active" : "sub-link"
-                      }
-                    >
-                      <Star size={16} />
-                      <span>Product Reviews</span>
-                    </NavLink>
-                  </div>
-                )}
-              </div>
-
-            </div>
-
-            <div className="nav-group">
-              <span className="group-label">Business</span>
-              <NavLink
-                to="/business"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <Briefcase size={20} />
-                {!isSidebarCollapsed && <span>Business Management</span>}
-              </NavLink>
-            </div>
-
-            <div className="nav-group">
-              <span className="group-label">Management</span>
-              <NavLink
-                to="/transactions"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <Receipt size={20} />
-                {!isSidebarCollapsed && <span>Transactions History</span>}
-              </NavLink>
-              {/* <NavLink
-                to="/contact"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <Mail size={20} />
-                {!isSidebarCollapsed && <span>Contact</span>}
-              </NavLink>
-              <NavLink
-                to="/website-reviews"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <Globe size={20} />
-                {!isSidebarCollapsed && <span>Website Reviews</span>}
-              </NavLink> */}
-            </div>
-            <div className="nav-group">
-              <span className="group-label">Tradizions Modules</span>
-              <NavLink to="/users" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-                <User size={20} />
-                {!isSidebarCollapsed && <span>User List</span>}
-              </NavLink>
-              <NavLink to="/contacts" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-                <Mail size={20} />
-                {!isSidebarCollapsed && <span>Contacts</span>}
-              </NavLink>
-              <NavLink to="/goals" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-                <TreePine size={20} />
-                {!isSidebarCollapsed && <span>Health Goals</span>}
-              </NavLink>
-              <NavLink to="/banners" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-                <Layers size={20} />
-                {!isSidebarCollapsed && <span>Seasonal Banners</span>}
-              </NavLink>
-              <NavLink to="/kural" className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}>
-                <Book size={20} />
-                {!isSidebarCollapsed && <span>Thinam Oru Kural</span>}
-              </NavLink>
+                </React.Fragment>
+              ))}
             </div>
           </nav>
         </div>
