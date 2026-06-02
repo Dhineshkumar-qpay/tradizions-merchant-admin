@@ -57,7 +57,7 @@ const EditGiftCard = () => {
       setError("");
       try {
         // Fetch Categories
-        const catRes = await API.post(APIROUTES.GETALLCATEGORIES);
+        const catRes = await API.post(APIROUTES.GETALLCATEGORIES,{type: "all"});
         const catData = catRes.data?.data || catRes.data;
         if (Array.isArray(catData)) {
           setCategories(catData);
@@ -205,7 +205,7 @@ const EditGiftCard = () => {
 
       setSuccess("Gift Box updated successfully!");
       setTimeout(() => {
-        navigate("/gift-cards/list");
+        navigate("/gift-products/list");
       }, 1500);
     } catch (err) {
       console.error("Update failed:", err);
@@ -239,7 +239,7 @@ const EditGiftCard = () => {
           {success && <p style={{ color: "var(--primary)", fontWeight: "600", marginTop: "5px" }}>{success}</p>}
         </div>
         <div className="btn-group">
-          <button className="btn-secondary" type="button" onClick={() => navigate("/gift-cards/list")} disabled={submitting}>
+          <button className="btn-secondary" type="button" onClick={() => navigate("/gift-products/list")} disabled={submitting}>
             Discard
           </button>
           <button className="btn-primary" type="button" onClick={handleUpdateGift} disabled={submitting}>

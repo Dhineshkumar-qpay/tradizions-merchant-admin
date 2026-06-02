@@ -186,78 +186,71 @@ const BusinessForm = () => {
     try {
       const bid = Number(id);
 
-      // 1. Save Basic Info
-      const basicPayload = {
-        bid: bid,
-        basicinfoid: formData.basicinfoid || 0,
-        ownername: formData.ownername,
-        designation: formData.designation,
-        mobile: formData.mobile,
-        whatsapp: formData.whatsapp,
-        email: formData.email,
-      };
-      console.log(`-------------------${JSON.stringify(basicPayload)}`);
-
-      await API.post(APIROUTES.ADDBASICINFO, basicPayload);
-
-      // 2. Save Business Info (multipart/form-data)
-      const businessFormData = new FormData();
-      businessFormData.append("bid", bid.toString());
-      if (formData.businessinfoid) {
-        businessFormData.append("businessinfoid", formData.businessinfoid.toString());
+      if (activeTab === "basic") {
+        const basicPayload = {
+          bid: bid,
+          basicinfoid: formData.basicinfoid || 0,
+          ownername: formData.ownername,
+          designation: formData.designation,
+          mobile: formData.mobile,
+          whatsapp: formData.whatsapp,
+          email: formData.email,
+        };
+        await API.post(APIROUTES.ADDBASICINFO, basicPayload);
+      } 
+      else if (activeTab === "shop") {
+        const businessFormData = new FormData();
+        businessFormData.append("bid", bid.toString());
+        businessFormData.append("businessinfoid", (formData.businessinfoid || 0).toString());
+        businessFormData.append("businessname", formData.businessname);
+        businessFormData.append("legalbusinessname", formData.legalbusinessname);
+        businessFormData.append("description", formData.description);
+        businessFormData.append("opentime", formData.opentime);
+        businessFormData.append("closetime", formData.closetime);
+        if (formData.businessimage instanceof File) {
+          businessFormData.append("businessimage", formData.businessimage);
+        }
+        await API.post(APIROUTES.ADDBUSINESSINFO, businessFormData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      } 
+      else if (activeTab === "address") {
+        const addressPayload = {
+          bid: bid,
+          addressid: formData.addressid || 0,
+          addressline: formData.addressline,
+          landmark: formData.landmark,
+          city: formData.city,
+          district: formData.district,
+          districtid: Number(formData.districtid) || 8,
+          state: formData.state,
+          stateid: Number(formData.stateid) || 1,
+          country: formData.country,
+          pincode: Number(formData.pincode) || 0,
+          latitude: Number(formData.latitude) || 11.3667,
+          longitude: Number(formData.longitude) || 77.7867,
+        };
+        await API.post(APIROUTES.ADDADDRESSINFO, addressPayload);
+      } 
+      else if (activeTab === "bank") {
+        const bankFormData = new FormData();
+        bankFormData.append("bid", bid.toString());
+        bankFormData.append("bankid", (formData.bankid || 0).toString());
+        bankFormData.append("accountholdername", formData.accountholdername);
+        bankFormData.append("accountnumber", formData.accountnumber);
+        bankFormData.append("bankname", formData.bankname);
+        bankFormData.append("branchname", formData.branchname);
+        bankFormData.append("ifsc", formData.ifsc);
+        if (formData.passbook instanceof File) {
+          bankFormData.append("passbook", formData.passbook);
+        }
+        const bankApiRoute = formData.bankid ? APIROUTES.UPDATEBANKINFO : APIROUTES.ADDBANKINFO;
+        await API.post(bankApiRoute, bankFormData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
-      businessFormData.append("businessname", formData.businessname);
-      businessFormData.append("legalbusinessname", formData.legalbusinessname);
-      businessFormData.append("description", formData.description);
-      businessFormData.append("opentime", formData.opentime);
-      businessFormData.append("closetime", formData.closetime);
-      if (formData.businessimage instanceof File) {
-        businessFormData.append("businessimage", formData.businessimage);
-      }
-      await API.post(APIROUTES.ADDBUSINESSINFO, businessFormData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
 
-      // 3. Save Address Info
-      const addressPayload = {
-        bid: bid,
-        addressid: formData.addressid || 0,
-        addressline: formData.addressline,
-        landmark: formData.landmark,
-        city: formData.city,
-        district: formData.district,
-        districtid: Number(formData.districtid) || 8,
-        state: formData.state,
-        stateid: Number(formData.stateid) || 1,
-        country: formData.country,
-        pincode: Number(formData.pincode) || 0,
-        latitude: Number(formData.latitude) || 11.3667,
-        longitude: Number(formData.longitude) || 77.7867,
-      };
-      await API.post(APIROUTES.ADDADDRESSINFO, addressPayload);
-
-      // 4. Save Bank Info (multipart/form-data)
-      const bankFormData = new FormData();
-      bankFormData.append("bid", bid.toString());
-      if (formData.bankid) {
-        bankFormData.append("bankid", formData.bankid.toString());
-      }
-      bankFormData.append("accountholdername", formData.accountholdername);
-      bankFormData.append("accountnumber", formData.accountnumber);
-      bankFormData.append("bankname", formData.bankname);
-      bankFormData.append("branchname", formData.branchname);
-      bankFormData.append("ifsc", formData.ifsc);
-      if (formData.passbook instanceof File) {
-        bankFormData.append("passbook", formData.passbook);
-      }
-      
-      const bankApiRoute = formData.bankid ? APIROUTES.UPDATEBANKINFO : APIROUTES.ADDBANKINFO;
-      await API.post(bankApiRoute, bankFormData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      alert("Business updated successfully!");
-      navigate("/business");
+      alert(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} details saved successfully!`);
     } catch (error) {
       console.error("Error saving business info:", error);
       alert("Error saving business information. Please try again.");
@@ -282,7 +275,7 @@ const BusinessForm = () => {
         onClick={handleSave}
         disabled={saving}
       >
-        <Save size={16} /> <span>{saving ? "Saving..." : "Save & Finish"}</span>
+        <Save size={16} /> <span>{saving ? "Saving..." : "Save Details"}</span>
       </button>
     </div>
   );

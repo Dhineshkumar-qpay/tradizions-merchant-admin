@@ -2,6 +2,7 @@ const APIROUTES = {
   SENDOTP: "/auth/sendotp",
   VERIFYOTP: "/auth/verifyotp",
   ADDCATEGORY: "/category/addcategory",
+  UPDATECATEGORY: "/category/updatecategory",
   GETALLCATEGORIES: "/category/getallcategories",
   ADDSUBCATEGORY: "/category/addsubcategory",
   GETALLSUBCATEGORIES: "/category/getallsubcategories",

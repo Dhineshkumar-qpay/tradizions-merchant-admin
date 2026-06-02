@@ -203,6 +203,7 @@ const ListProducts = () => {
             <table className="products-table">
               <thead>
                 <tr>
+                  <th>S.NO</th>
                   <th>Image</th>
                   <th>Product Details</th>
                   <th>Category</th>
@@ -215,6 +216,7 @@ const ListProducts = () => {
               <tbody>
                 {displayedProducts.map((p) => (
                   <tr key={p.productid}>
+                    <td>{displayedProducts.indexOf(p) + 1}</td>
                     <td>
                       <div
                         className="table-img-placeholder"

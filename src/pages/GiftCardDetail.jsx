@@ -87,7 +87,7 @@ const GiftCardDetail = () => {
         <button
           className="btn-secondary"
           style={{ marginTop: "20px" }}
-          onClick={() => navigate("/gift-cards/list")}
+          onClick={() => navigate("/gift-products/list")}
         >
           Back to List
         </button>
@@ -113,14 +113,14 @@ const GiftCardDetail = () => {
         <div className="btn-group">
           <button
             className="btn-secondary"
-            onClick={() => navigate("/gift-cards/list")}
+            onClick={() => navigate("/gift-products/list")}
           >
             <ArrowLeft size={18} style={{ marginRight: "8px" }} /> Back
           </button>
           <button
             className="btn-primary"
             onClick={() =>
-              navigate(`/gift-cards/edit/${gift.giftid}`, { state: { bid } })
+              navigate(`/gift-products/edit/${gift.giftid}`, { state: { bid } })
             }
           >
             <Edit size={18} style={{ marginRight: "8px" }} /> Edit Configuration

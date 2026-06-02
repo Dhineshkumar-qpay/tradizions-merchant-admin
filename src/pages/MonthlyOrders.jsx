@@ -141,6 +141,34 @@ const MonthlyOrders = () => {
     currentPage * rowsPerPage,
   );
 
+  const handleExportCSV = () => {
+    if (filteredOrders.length === 0) return;
+    
+    const headers = ["Order ID", "Type", "Total Amount", "Payment Status", "Order Status", "Order Date"];
+    const csvRows = [headers.join(",")];
+    
+    filteredOrders.forEach(order => {
+      const row = [
+        `ORD-${order.orderid}`,
+        order.ordertype || "Monthly",
+        order.totalamount,
+        order.paymentstatus,
+        order.orderstatus,
+        order.orderdate
+      ];
+      csvRows.push(row.map(val => `"${val}"`).join(","));
+    });
+    
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `monthly_orders_export_${new Date().getTime()}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   const handleStatusUpdate = async (id, newStatus) => {
     setProcessingId(id);
     try {
@@ -183,7 +211,7 @@ const MonthlyOrders = () => {
           </p>
         </div>
         <div className="header-actions">
-          <button className="btn-secondary">
+          <button className="btn-secondary" onClick={handleExportCSV}>
             <Download size={18} /> Export CSV
           </button>
         </div>

@@ -68,7 +68,7 @@ const Subcategories = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await API.post(APIROUTES.GETALLCATEGORIES);
+      const response = await API.post(APIROUTES.GETALLCATEGORIES, { type: "all" });
       const data = response.data?.data || response.data;
       if (Array.isArray(data) && data.length > 0) {
         setCategories(data);
@@ -394,7 +394,7 @@ const Subcategories = () => {
                     <th>Image</th>
                     <th>Subcategory Info</th>
                     <th>Parent Category</th>
-                    <th>Status</th>
+
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -422,15 +422,6 @@ const Subcategories = () => {
                             <Grid size={12} />
                             {sub.categoryname || "Unknown Category"}
                           </span>
-                        </td>
-                        <td>
-                          <button
-                            className={`status-toggle ${(sub.status || "Active").toLowerCase()}`}
-                            onClick={() => toggleStatus(sub.subcategoryid)}
-                          >
-                            <div className="toggle-dot"></div>
-                            <span>{sub.status || "Active"}</span>
-                          </button>
                         </td>
                         <td>
                           <div className="action-cell">
@@ -552,25 +543,9 @@ const Subcategories = () => {
             </div>
             <div className="drawer-content">
               <div className="detail-profile-section">
-                <div className="cat-large-img">
-                  {getParentCategoryImage(showDetailDrawer.categoryid) ? (
-                    <img
-                      src={getImageUrl(
-                        getParentCategoryImage(showDetailDrawer.categoryid),
-                      )}
-                      alt={showDetailDrawer.subcategoryname}
-                    />
-                  ) : (
-                    <ImageIcon size={40} />
-                  )}
-                </div>
                 <div className="cat-main-meta">
                   <h3>{showDetailDrawer.subcategoryname}</h3>
-                  <span
-                    className={`status-badge ${(showDetailDrawer.status || "Active").toLowerCase()}`}
-                  >
-                    {showDetailDrawer.status || "Active"}
-                  </span>
+
                 </div>
               </div>
 
@@ -637,7 +612,7 @@ const Subcategories = () => {
               <div className="modal-form" style={{ padding: "25px" }}>
                 <div
                   className="form-group-custom"
-                  style={{ marginBottom: "20px" }}
+                  style={{ marginBottom: "20px", alignItems: "flex-start" }}
                 >
                   <label>Parent Category</label>
                   <select
@@ -659,7 +634,7 @@ const Subcategories = () => {
                 </div>
                 <div
                   className="form-group-custom"
-                  style={{ marginBottom: "20px" }}
+                  style={{ marginBottom: "20px", alignItems: "flex-start" }}
                 >
                   <label>Subcategory Name</label>
                   <input
@@ -676,7 +651,7 @@ const Subcategories = () => {
                 </div>
                 <div
                   className="form-group-custom"
-                  style={{ marginBottom: "20px" }}
+                  style={{ marginBottom: "20px", alignItems: "flex-start" }}
                 >
                   <label>Description</label>
                   <textarea
@@ -690,21 +665,7 @@ const Subcategories = () => {
                     }
                   />
                 </div>
-                <div className="form-group-custom">
-                  <label>Status</label>
-                  <select
-                    value={showEditModal.status || "Active"}
-                    onChange={(e) =>
-                      setShowEditModal({
-                        ...showEditModal,
-                        status: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
+
               </div>
               <div className="modal-footer">
                 <button

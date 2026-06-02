@@ -60,7 +60,7 @@ const AddGiftCard = () => {
           }
         }
 
-        const catRes = await API.post(APIROUTES.GETALLCATEGORIES);
+        const catRes = await API.post(APIROUTES.GETALLCATEGORIES,{type: "all"});
         const catData = catRes.data?.data || catRes.data;
         if (Array.isArray(catData)) {
           setCategories(catData);
@@ -200,7 +200,7 @@ const AddGiftCard = () => {
 
       setSuccess("Gift Box added successfully!");
       setTimeout(() => {
-        navigate("/gift-cards/list");
+        navigate("/gift-products/list");
       }, 1500);
     } catch (err) {
       console.error("Save gift box failed:", err);
@@ -227,7 +227,7 @@ const AddGiftCard = () => {
           <button
             type="button"
             className="btn-secondary"
-            onClick={() => navigate("/gift-cards/list")}
+            onClick={() => navigate("/gift-products/list")}
             disabled={submitting}
           >
             <ArrowLeft size={18} style={{ marginRight: "8px" }} />

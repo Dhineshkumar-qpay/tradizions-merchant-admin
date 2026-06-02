@@ -79,7 +79,7 @@ const AddProduct = () => {
         }
 
         // Fetch Categories
-        const catRes = await API.post(APIROUTES.GETALLCATEGORIES);
+        const catRes = await API.post(APIROUTES.GETALLCATEGORIES, {type: "all"});
         const catData = catRes.data?.data || catRes.data;
         if (Array.isArray(catData)) {
           setCategories(catData);

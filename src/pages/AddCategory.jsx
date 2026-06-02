@@ -21,6 +21,7 @@ const AddCategory = () => {
   // States
   const [categoryName, setCategoryName] = useState("");
   const [description, setDescription] = useState("");
+  const [type, setType] = useState("product");
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -68,6 +69,7 @@ const AddCategory = () => {
     const formDataPayload = new FormData();
     formDataPayload.append("categoryname", categoryName);
     formDataPayload.append("description", description);
+    formDataPayload.append("type", type.toLowerCase());
     if (imageFile) {
       formDataPayload.append("categoryimage", imageFile);
     }
@@ -171,6 +173,19 @@ const AddCategory = () => {
                   <span className="helper-text">
                     Ensure the name is unique and descriptive.
                   </span>
+                </div>
+                <div className="input-group">
+                  <label>Category Type *</label>
+                  <select
+                    className="primary-input"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    required
+                    style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1.5px solid #edf2e9", background: "#fcfdfb" }}
+                  >
+                    <option value="product">Product</option>
+                    <option value="gift">Gift</option>
+                  </select>
                 </div>
                 <div className="input-group">
                   <label>Category Description</label>

@@ -124,7 +124,7 @@ const ListGiftCards = () => {
           </div>
           <button
             className="btn-primary add-gift-btn"
-            onClick={() => navigate("/gift-cards/add")}
+            onClick={() => navigate("/gift-products/add")}
           >
             <Plus size={18} />
             <span>Add Gift Box</span>
@@ -210,6 +210,7 @@ const ListGiftCards = () => {
             <table className="gift-table">
               <thead>
                 <tr>
+                  <th>S.No</th>
                   <th>Preview</th>
                   <th>Gift Details</th>
                   <th>Included Items</th>
@@ -221,6 +222,7 @@ const ListGiftCards = () => {
               <tbody>
                 {displayedGiftCards.map((card) => (
                   <tr key={card.giftid}>
+                    <td>{displayedGiftCards.indexOf(card) + 1}</td>
                     <td>
                       <div
                         className="gift-img-box"
@@ -301,7 +303,7 @@ const ListGiftCards = () => {
                           className="action-btn view"
                           title="View Details"
                           onClick={() =>
-                            navigate(`/gift-cards/detail/${card.giftid}`, {
+                            navigate(`/gift-products/detail/${card.giftid}`, {
                               state: { bid: selectedBid },
                             })
                           }
@@ -312,7 +314,7 @@ const ListGiftCards = () => {
                           className="action-btn edit"
                           title="Edit Gift Box"
                           onClick={() =>
-                            navigate(`/gift-cards/edit/${card.giftid}`, {
+                            navigate(`/gift-products/edit/${card.giftid}`, {
                               state: { bid: selectedBid },
                             })
                           }

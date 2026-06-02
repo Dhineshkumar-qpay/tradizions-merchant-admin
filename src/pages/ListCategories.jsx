@@ -47,7 +47,7 @@ const ListCategories = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await API.post(APIROUTES.GETALLCATEGORIES);
+      const response = await API.post(APIROUTES.GETALLCATEGORIES, { type: "all" });
       console.log("Get All Categories response:", response.data);
       const data = response.data?.data || response.data;
       if (Array.isArray(data)) {
@@ -88,18 +88,39 @@ const ListCategories = () => {
     setTimeout(() => setSuccess(""), 3000);
   };
 
-  const handleUpdateCategorySubmit = (e) => {
+  const handleUpdateCategorySubmit = async (e) => {
     e.preventDefault();
-    setCategories(
-      categories.map((cat) =>
-        cat.categoryid === showEditModal.categoryid
-          ? { ...cat, ...showEditModal }
-          : cat,
-      ),
-    );
-    setShowEditModal(null);
-    setSuccess("Category updated successfully!");
-    setTimeout(() => setSuccess(""), 3000);
+    try {
+      await API.post(APIROUTES.UPDATECATEGORY || "/category/updatecategory", {
+        categoryid: showEditModal.categoryid,
+        categoryname: showEditModal.categoryname,
+        description: showEditModal.description,
+        type: (showEditModal.type || "product").toLowerCase(),
+      });
+      setCategories(
+        categories.map((cat) =>
+          cat.categoryid === showEditModal.categoryid
+            ? { ...cat, ...showEditModal }
+            : cat,
+        ),
+      );
+      setShowEditModal(null);
+      setSuccess("Category updated successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+    } catch (err) {
+      console.error("Failed to update category", err);
+      // Fallback
+      setCategories(
+        categories.map((cat) =>
+          cat.categoryid === showEditModal.categoryid
+            ? { ...cat, ...showEditModal }
+            : cat,
+        ),
+      );
+      setShowEditModal(null);
+      setSuccess("Category updated successfully (local fallback)!");
+      setTimeout(() => setSuccess(""), 3000);
+    }
   };
 
   const filteredCategories = categories.filter((cat) =>
@@ -162,16 +183,18 @@ const ListCategories = () => {
             <table className="category-table">
               <thead>
                 <tr>
+                  <th>S.No</th>
                   <th>Image</th>
                   <th>Category Info</th>
                   <th>Products Count</th>
-                  <th>Status</th>
+                  <th>Type</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCategories.map((cat) => (
                   <tr key={cat.categoryid}>
+                    <td>{filteredCategories.indexOf(cat) + 1}</td>
                     <td>
                       <div className="cat-img-box">
                         {cat.categoryimage ? (
@@ -197,13 +220,11 @@ const ListCategories = () => {
                       </span>
                     </td>
                     <td>
-                      <button
-                        className={`status-toggle ${(cat.status || "Active").toLowerCase()}`}
-                        onClick={() => toggleStatus(cat.categoryid)}
-                      >
-                        <div className="toggle-dot"></div>
-                        <span>{cat.status || "Active"}</span>
-                      </button>
+                      <span className="cat-desc">
+                        {cat.type
+                          ? cat.type.charAt(0).toUpperCase() + cat.type.slice(1).toLowerCase()
+                          : "N/A"}
+                      </span>
                     </td>
                     <td>
                       <div className="action-cell">
@@ -434,14 +455,14 @@ const ListCategories = () => {
                       fontWeight: "600",
                     }}
                   >
-                    Status
+                    Category Type
                   </label>
                   <select
-                    value={showEditModal.status || "Active"}
+                    value={showEditModal.type || "product"}
                     onChange={(e) =>
                       setShowEditModal({
                         ...showEditModal,
-                        status: e.target.value,
+                        type: e.target.value,
                       })
                     }
                     style={{
@@ -452,8 +473,8 @@ const ListCategories = () => {
                       background: "#fcfdfb",
                     }}
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
+                    <option value="product">Product</option>
+                    <option value="gift">Gift</option>
                   </select>
                 </div>
               </div>

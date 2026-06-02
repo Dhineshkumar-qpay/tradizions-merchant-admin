@@ -476,6 +476,10 @@
         grid-template-columns: 1fr;
     }
 
+    .info-item.full {
+        grid-column: span 1;
+    }
+
     .bank-info-grid {
         grid-template-columns: 1fr;
     }
@@ -521,6 +525,10 @@
 
     .form-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .field-group.full {
+        grid-column: span 1;
     }
 }
 

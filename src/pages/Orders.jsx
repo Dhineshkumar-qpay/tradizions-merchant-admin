@@ -124,6 +124,39 @@ const Orders = () => {
     currentPage * rowsPerPage,
   );
 
+  const handleExportCSV = () => {
+    if (filteredOrders.length === 0) return;
+    
+    const headers = ["Order ID", "Products", "Total Amount", "Payment Status", "Order Status", "Order Date"];
+    const csvRows = [headers.join(",")];
+    
+    filteredOrders.forEach(order => {
+      const orderId = order.orderid || order.orderitemid;
+      const products = order.items && order.items.length > 0 
+        ? order.items.map((i) => i.productname).join(" | ") 
+        : order.ordertype || order.itemtype || "Normal";
+      
+      const row = [
+        `ORD-${orderId}`,
+        products,
+        order.totalamount || order.totalprice || 0,
+        order.paymentstatus || "Pending",
+        order.orderstatus || order.itemstatus || "Pending",
+        order.createdAt || "N/A"
+      ];
+      csvRows.push(row.map(val => `"${val}"`).join(","));
+    });
+    
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders_export_${new Date().getTime()}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   const handleOrderStatusUpdate = async (id) => {
     const newStatus = selectedStatusChanges[id];
     if (!newStatus) return;
@@ -240,7 +273,7 @@ const Orders = () => {
           </p>
         </div>
         <div className="header-actions">
-          <button className="btn-secondary">
+          <button className="btn-secondary" onClick={handleExportCSV}>
             <Download size={18} /> Export CSV
           </button>
         </div>
@@ -1363,7 +1396,11 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
     color: "#333333",
     family: "'Playfair Display', serif, sans-serif",
     weight: "700",
-    align: "center"
+    align: "center",
+    style: "normal",
+    opacity: 1,
+    letterSpacing: 0,
+    transform: "none"
   });
 
   const [senderConfig, setSenderConfig] = useState({
@@ -1372,7 +1409,11 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
     color: "#444444",
     family: "'Playfair Display', serif, sans-serif",
     weight: "600",
-    align: "right"
+    align: "right",
+    style: "italic",
+    opacity: 1,
+    letterSpacing: 0,
+    transform: "none"
   });
 
   const [activeTab, setActiveTab] = useState('msg');
@@ -1424,6 +1465,16 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
     }
   }, [draggingTarget, handleMouseMove, handleMouseUp]);
 
+  const applyTransform = (text, transform) => {
+    if (!text) return "";
+    if (transform === "uppercase") return text.toUpperCase();
+    if (transform === "lowercase") return text.toLowerCase();
+    if (transform === "capitalize") {
+      return text.replace(/\w\S*/g, (w) => (w.replace(/^\w/, (c) => c.toUpperCase())));
+    }
+    return text;
+  };
+
   const downloadImage = async () => {
     if (isDownloading) return;
     setIsDownloading(true);
@@ -1456,10 +1507,14 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
       // Draw Message
+      ctx.globalAlpha = msgConfig.opacity;
       ctx.textAlign = msgConfig.align;
       ctx.textBaseline = "middle";
       const msgFontSize = msgConfig.size * (canvasWidth / 400); 
-      ctx.font = `${msgConfig.weight} ${msgFontSize}px ${msgConfig.family}`;
+      ctx.font = `${msgConfig.style === 'italic' ? 'italic ' : ''}${msgConfig.weight} ${msgFontSize}px ${msgConfig.family}`;
+      if (ctx.letterSpacing !== undefined) {
+         ctx.letterSpacing = `${msgConfig.letterSpacing * (canvasWidth / 400)}px`;
+      }
       ctx.fillStyle = msgConfig.color;
       ctx.shadowColor = "rgba(255,255,255,0.8)";
       ctx.shadowBlur = 4;
@@ -1467,7 +1522,8 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
       const msgX = (msgConfig.x / 100) * canvasWidth;
       const msgY = (msgConfig.y / 100) * canvasHeight;
       
-      const words = (previewGiftCard.giftmessage || "").split(' ');
+      const msgText = applyTransform(previewGiftCard.giftmessage || "", msgConfig.transform);
+      const words = msgText.split(' ');
       let line = '';
       const lines = [];
       const maxWidth = canvasWidth * 0.8;
@@ -1489,18 +1545,25 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
         ctx.fillText(lines[i], msgX, y);
         y += msgFontSize * 1.2;
       }
+      ctx.globalAlpha = 1;
       
       // Draw Sender
+      ctx.globalAlpha = senderConfig.opacity;
       ctx.textAlign = senderConfig.align;
       ctx.textBaseline = "middle";
       const senderFontSize = senderConfig.size * (canvasWidth / 400);
-      ctx.font = `italic ${senderConfig.weight} ${senderFontSize}px ${senderConfig.family}`;
+      ctx.font = `${senderConfig.style === 'italic' ? 'italic ' : ''}${senderConfig.weight} ${senderFontSize}px ${senderConfig.family}`;
+      if (ctx.letterSpacing !== undefined) {
+         ctx.letterSpacing = `${senderConfig.letterSpacing * (canvasWidth / 400)}px`;
+      }
       ctx.fillStyle = senderConfig.color;
       
       const senderX = (senderConfig.x / 100) * canvasWidth;
       const senderY = (senderConfig.y / 100) * canvasHeight;
       
-      ctx.fillText(`- ${previewGiftCard.sendername}`, senderX, senderY);
+      const senderText = applyTransform(`- ${previewGiftCard.sendername}`, senderConfig.transform);
+      ctx.fillText(senderText, senderX, senderY);
+      ctx.globalAlpha = 1;
       
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
@@ -1523,7 +1586,7 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
         <div
           className="modal-content animate-pop"
           onClick={(e) => e.stopPropagation()}
-          style={{ width: "95%", maxWidth: "800px", padding: 0, overflow: "hidden", borderRadius: "12px", background: "#fff", display: "flex", flexDirection: "column" }}
+          style={{ width: "95%", maxWidth: "800px", padding: 0, overflow: "hidden", borderRadius: "12px", background: "#fff", display: "flex", flexDirection: "column", maxHeight: "90vh" }}
         >
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", borderBottom: "1px solid #eee" }}>
@@ -1532,7 +1595,7 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
           </div>
 
           {/* Body */}
-          <div style={{ display: "flex", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", overflow: "auto" }}>
             
             {/* Preview Column */}
             <div style={{ flex: "1 1 400px", padding: "20px", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", borderRight: "1px solid #eee" }}>
@@ -1572,7 +1635,11 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
                       fontFamily: msgConfig.family, 
                       fontSize: `clamp(12px, ${msgConfig.size * 0.15}vw, ${msgConfig.size}px)`, 
                       fontWeight: msgConfig.weight, 
-                      color: msgConfig.color, 
+                      color: msgConfig.color,
+                      fontStyle: msgConfig.style,
+                      opacity: msgConfig.opacity,
+                      letterSpacing: `${msgConfig.letterSpacing}px`,
+                      textTransform: msgConfig.transform,
                       margin: 0,
                       textShadow: "0 1px 2px rgba(255,255,255,0.8)"
                     }}>
@@ -1598,9 +1665,12 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
                       fontFamily: senderConfig.family, 
                       fontSize: `clamp(10px, ${senderConfig.size * 0.15}vw, ${senderConfig.size}px)`, 
                       fontWeight: senderConfig.weight, 
-                      color: senderConfig.color, 
+                      color: senderConfig.color,
+                      fontStyle: senderConfig.style,
+                      opacity: senderConfig.opacity,
+                      letterSpacing: `${senderConfig.letterSpacing}px`,
+                      textTransform: senderConfig.transform,
                       margin: 0,
-                      fontStyle: "italic",
                       textShadow: "0 1px 2px rgba(255,255,255,0.8)"
                     }}>
                       - {previewGiftCard.sendername}
@@ -1624,8 +1694,8 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
                   >Sender</button>
                </div>
 
-               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                 <label style={{ fontSize: "12px", fontWeight: "600" }}>Font Family</label>
+               <div style={{ display: "flex", flexDirection: "column", gap: "12px", overflowY: "auto", paddingRight: "5px" }}>
+                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Font Family</label>
                  <select value={activeConfig.family} onChange={e => updateConfig('family', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd" }}>
                    <option value="'Playfair Display', serif, sans-serif">Playfair Display</option>
                    <option value="Inter, sans-serif">Inter</option>
@@ -1634,16 +1704,22 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
                    <option value="'Courier New', monospace">Courier New</option>
                  </select>
 
-                 <label style={{ fontSize: "12px", fontWeight: "600" }}>Font Size ({activeConfig.size}px)</label>
-                 <input type="range" min="10" max="60" value={activeConfig.size} onChange={e => updateConfig('size', parseInt(e.target.value))} />
+                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Font Size ({activeConfig.size}px)</label>
+                 <input type="range" min="10" max="60" value={activeConfig.size} onChange={e => updateConfig('size', parseInt(e.target.value))} style={{ margin: 0 }} />
+                 
+                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Letter Spacing ({activeConfig.letterSpacing}px)</label>
+                 <input type="range" min="-5" max="20" value={activeConfig.letterSpacing} onChange={e => updateConfig('letterSpacing', parseInt(e.target.value))} style={{ margin: 0 }} />
+                 
+                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Opacity ({activeConfig.opacity})</label>
+                 <input type="range" min="0" max="1" step="0.1" value={activeConfig.opacity} onChange={e => updateConfig('opacity', parseFloat(e.target.value))} style={{ margin: 0 }} />
 
                  <div style={{ display: "flex", gap: "10px" }}>
                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-                     <label style={{ fontSize: "12px", fontWeight: "600" }}>Color</label>
+                     <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Color</label>
                      <input type="color" value={activeConfig.color} onChange={e => updateConfig('color', e.target.value)} style={{ width: "100%", height: "36px", border: "1px solid #ddd", borderRadius: "4px", padding: 0 }} />
                    </div>
                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-                     <label style={{ fontSize: "12px", fontWeight: "600" }}>Weight</label>
+                     <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Weight</label>
                      <select value={activeConfig.weight} onChange={e => updateConfig('weight', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
                        <option value="400">Normal</option>
                        <option value="600">Semi Bold</option>
@@ -1651,8 +1727,27 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
                      </select>
                    </div>
                  </div>
+                 
+                 <div style={{ display: "flex", gap: "10px" }}>
+                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                     <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Style</label>
+                     <select value={activeConfig.style} onChange={e => updateConfig('style', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
+                       <option value="normal">Normal</option>
+                       <option value="italic">Italic</option>
+                     </select>
+                   </div>
+                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                     <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Transform</label>
+                     <select value={activeConfig.transform} onChange={e => updateConfig('transform', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
+                       <option value="none">None</option>
+                       <option value="uppercase">Uppercase</option>
+                       <option value="lowercase">Lowercase</option>
+                       <option value="capitalize">Capitalize</option>
+                     </select>
+                   </div>
+                 </div>
 
-                 <label style={{ fontSize: "12px", fontWeight: "600" }}>Alignment</label>
+                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Alignment</label>
                  <div style={{ display: "flex", gap: "5px" }}>
                    {['left', 'center', 'right'].map(align => (
                      <button 
