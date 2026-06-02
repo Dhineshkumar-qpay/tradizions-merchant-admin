@@ -57,7 +57,7 @@ const ManageGiftCards = () => {
 
   // Form input states
   const [cardName, setCardName] = useState("");
-  const [price, setPrice] = useState("");
+
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -161,11 +161,6 @@ const ManageGiftCards = () => {
       setError("Please enter a Gift Card Name.");
       return;
     }
-    if (!price || Number(price) <= 0) {
-      setError("Please enter a valid Price.");
-      return;
-    }
-
     setSubmitting(true);
     setError("");
     setSuccess("");
@@ -185,7 +180,6 @@ const ManageGiftCards = () => {
 
       setSuccess("Gift card added successfully");
       setCardName("");
-      setPrice("");
       setImageFile(null);
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -206,7 +200,6 @@ const ManageGiftCards = () => {
       setGiftCards([localNew, ...giftCards]);
       setSuccess("Gift card added successfully (local fallback)");
       setCardName("");
-      setPrice("");
       setImageFile(null);
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -322,17 +315,6 @@ const ManageGiftCards = () => {
               </div>
 
               <div className="form-group-custom">
-                <label>Price (₹) *</label>
-                <input
-                  type="number"
-                  placeholder="e.g. 1000"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="form-group-custom">
                 <label>Card Image</label>
                 <div className="image-upload-wrapper" onClick={triggerFileSelect}>
                   {imagePreview ? (
@@ -422,7 +404,6 @@ const ManageGiftCards = () => {
                   <tr>
                     <th>Card Design</th>
                     <th>Card Details</th>
-                    <th>Price</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -444,9 +425,6 @@ const ManageGiftCards = () => {
                           <span className="card-name">{card.cardname}</span>
                           <span className="card-desc">ID: CARD-{card.giftcardid.toString().padStart(3, "0")}</span>
                         </div>
-                      </td>
-                      <td>
-                        <span className="price-badge">₹{card.cardprice}</span>
                       </td>
                       <td>
                         <span className="status-badge">

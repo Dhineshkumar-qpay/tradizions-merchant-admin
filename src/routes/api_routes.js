@@ -41,6 +41,7 @@ const APIROUTES = {
   CALCULATORMERCHANTORDERS: "/monthly/merchant-orders",
   CALCULATORORDERDETAILS: "/monthly/order-detail",
   CALCULATORORDERSTATUSUPDATE: "/monthly/update-order-status",
+  GETPROFILE: "/auth/profile",
   
   // New modules API routes
   MENUPAGES: "/menu/merchant-menus",

@@ -19,7 +19,7 @@ const TradizionsBanners = () => {
   const fetchBanners = async () => {
     try {
       const res = await API.post(APIROUTES.GETALLBANNER);
-      log("Banners fetched:", res.data);
+      console.log("Banners fetched:", res.data);
       if (res.data && res.data.statusCode === 200) { setBanners(res.data.data || []); }
     } catch (error) { console.error(error); }
   };
@@ -41,8 +41,9 @@ const TradizionsBanners = () => {
       data.append("bannername", formData.bannername);
       data.append("description", formData.description);
       if (formData.bannerimage) data.append("bannerimage", formData.bannerimage);
-
-      await API.post(APIROUTES.ADDBANNER, data);
+      await API.post(APIROUTES.ADDBANNER, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setFormData({ bannername: "", description: "", bannerimage: null });
       fetchBanners();
     } catch (error) { console.error(error); }

@@ -281,7 +281,7 @@ const ListGiftCards = () => {
                             {Math.round(
                               ((card.giftprice - card.giftsellingprice) /
                                 card.giftprice) *
-                                100,
+                              100,
                             )}
                             % OFF
                           </span>

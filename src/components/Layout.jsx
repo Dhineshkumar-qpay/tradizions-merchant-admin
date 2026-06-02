@@ -27,6 +27,7 @@ const Layout = () => {
   const [expandedMenu, setExpandedMenu] = useState(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [menus, setMenus] = useState([]);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     const fetchMenus = async () => {
@@ -39,7 +40,20 @@ const Layout = () => {
         console.error("Failed to fetch menus", err);
       }
     };
+
+    const fetchProfile = async () => {
+      try {
+        const res = await API.post(APIROUTES.GETPROFILE);
+        if (res.data && res.data.statusCode === 200 && res.data.data) {
+          setProfile(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile", err);
+      }
+    };
+
     fetchMenus();
+    fetchProfile();
   }, []);
 
   const toggleMenu = (menuName) => {
@@ -187,21 +201,14 @@ const Layout = () => {
             >
               <List size={22} />
             </button>
-            <div className="header-search">
-              <Search size={18} />
-              <input type="text" placeholder="Search products, orders..." />
-            </div>
+            <h3>Tradizions Admin</h3>
           </div>
 
           <div className="header-actions">
-            <button className="icon-btn">
-              <Bell size={20} />
-              <span className="badge"></span>
-            </button>
             <div className="user-profile">
               <div className="user-info">
-                <span className="user-name">Admin User</span>
-                <span className="user-role">Super Admin</span>
+                <span className="user-name">{profile?.username || "Admin User"}</span>
+                <span className="user-role">{profile?.phone || "Super Admin"}</span>
               </div>
               <div className="user-avatar">
                 <User size={20} />

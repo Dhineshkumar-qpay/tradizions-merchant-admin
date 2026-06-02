@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { API } from "../service/api_service";
 import { APIROUTES } from "../routes/api_routes";
 import "./Login.css";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [phone, setPhone] = useState("");
@@ -80,7 +81,7 @@ const Login = () => {
       console.error("Send OTP Error:", err);
       setError(
         err.response?.data?.message ||
-          "Failed to send OTP. Please check the mobile number and try again.",
+        "Failed to send OTP. Please check the mobile number and try again.",
       );
     } finally {
       setLoading(false);
@@ -113,6 +114,11 @@ const Login = () => {
         throw new Error("Authentication token not found in response.");
       }
 
+      if (response.data?.data?.role !== "merchant") {
+        toast.error("Only Merchant accounts are allowed to access the admin panel. Please use a valid merchant account.",);
+        return;
+      }
+
       localStorage.setItem("token", token);
 
       if (response.data?.data?.userid) {
@@ -131,7 +137,7 @@ const Login = () => {
       console.error("Verify OTP Error:", err);
       setError(
         err.response?.data?.message ||
-          "Invalid or expired OTP. Please try again.",
+        "Invalid or expired OTP. Please try again.",
       );
     } finally {
       setLoading(false);

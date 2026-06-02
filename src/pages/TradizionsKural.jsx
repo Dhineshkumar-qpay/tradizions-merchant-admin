@@ -29,8 +29,9 @@ const TradizionsKural = () => {
     try {
       const data = new FormData();
       data.append("kurals", jsonFile);
-
-      await API.post(APIROUTES.ADDKURAL, data);
+      await API.post(APIROUTES.ADDKURAL, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setJsonFile(null);
       e.target.reset();
       fetchKurals();
