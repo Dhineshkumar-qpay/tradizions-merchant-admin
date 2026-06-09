@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import {
-  ArrowLeft,
+import { Loader2, ArrowLeft,
   Edit,
   Gift,
   Tag,
   Package,
   IndianRupee,
   Clock,
-  ChevronRight,
-} from "lucide-react";
+  ChevronRight, } from 'lucide-react';
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./AddProduct.css";
 
 const GiftCardDetail = () => {
@@ -57,9 +55,7 @@ const GiftCardDetail = () => {
   const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3003/api";
-    const origin = base.replace(/\/api\/?$/, "");
-    return `${origin}${path}`;
+    return `${IMAGE_URL}${path}`;
   };
 
   if (loading) {
@@ -67,7 +63,7 @@ const GiftCardDetail = () => {
       <div
         style={{ display: "flex", justifyContent: "center", padding: "80px" }}
       >
-        <div className="circular-loader"></div>
+        <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
       </div>
     );
   }

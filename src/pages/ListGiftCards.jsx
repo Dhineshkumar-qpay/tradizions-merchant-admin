@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Plus,
+import { Loader2, Plus,
   Search,
   Edit,
   Trash2,
@@ -8,12 +7,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  Eye,
-} from "lucide-react";
+  Eye, } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import "./GiftCardManagement.css";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 
 const ListGiftCards = () => {
   const navigate = useNavigate();
@@ -68,13 +66,6 @@ const ListGiftCards = () => {
     }
   };
 
-  const getImageUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3003/api";
-    const origin = base.replace(/\/api\/?$/, ""); // strip /api
-    return `${origin}${path}`;
-  };
 
   const handleDeleteGift = async () => {
     try {
@@ -195,7 +186,7 @@ const ListGiftCards = () => {
 
         <div className="table-responsive thin-scrollbar">
           {loading ? (
-            <div className="circular-loader"></div>
+            <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
           ) : displayedGiftCards.length === 0 ? (
             <div
               style={{
@@ -235,7 +226,7 @@ const ListGiftCards = () => {
                       >
                         {card.giftimage ? (
                           <img
-                            src={getImageUrl(card.giftimage)}
+                            src={`${IMAGE_URL}${card.giftimage}`}
                             alt={card.giftname}
                             style={{
                               width: "100%",

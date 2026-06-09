@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Search, Trash2, Plus, ChevronLeft, ChevronRight, Save } from "lucide-react";
+import { Search, Trash2, Plus, ChevronLeft, ChevronRight, Save, Edit } from "lucide-react";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./Subcategories.css";
 
 const TradizionsBanners = () => {
@@ -10,6 +10,7 @@ const TradizionsBanners = () => {
 
   const [formData, setFormData] = useState({ bannername: "", description: "", bannerimage: null });
   const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -33,6 +34,25 @@ const TradizionsBanners = () => {
     }
   };
 
+  const handleEdit = (banner) => {
+    setEditingId(banner.bannerid);
+    setFormData({
+      bannername: banner.bannername || "",
+      description: banner.description || "",
+      bannerimage: null
+    });
+  };
+
+  const handleStatusToggle = async (bannerid, currentStatus) => {
+    const newStatus = currentStatus === "active" || currentStatus === 1 ? "inactive" : "active";
+    try {
+      await API.post(APIROUTES.UPDATEBANNERSTATUS, { bannerid, status: newStatus });
+      setBanners(banners.map(b => b.bannerid === bannerid ? { ...b, status: newStatus } : b));
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    }
+  };
+
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -41,9 +61,18 @@ const TradizionsBanners = () => {
       data.append("bannername", formData.bannername);
       data.append("description", formData.description);
       if (formData.bannerimage) data.append("bannerimage", formData.bannerimage);
-      await API.post(APIROUTES.ADDBANNER, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      
+      if (editingId) {
+        data.append("bannerid", editingId);
+        await API.post(APIROUTES.UPDATEBANNER, data, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        setEditingId(null);
+      } else {
+        await API.post(APIROUTES.ADDBANNER, data, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+      }
       setFormData({ bannername: "", description: "", bannerimage: null });
       fetchBanners();
     } catch (error) { console.error(error); }
@@ -67,7 +96,7 @@ const TradizionsBanners = () => {
         <div className="form-card section-card full-width-card">
           <div className="card-header-premium">
             <Plus size={18} />
-            <h2>Create Banner</h2>
+            <h2>{editingId ? "Edit Banner" : "Create Banner"}</h2>
           </div>
           <form onSubmit={handleAddSubmit} className="subcategory-form-panel">
             <div className="subcategory-horizontal-form" style={{ flexWrap: 'wrap' }}>
@@ -80,13 +109,28 @@ const TradizionsBanners = () => {
                 <input type="text" required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Enter description..." />
               </div>
               <div className="form-group-custom">
-                <label>Banner Image *</label>
-                <input type="file" required onChange={e => setFormData({ ...formData, bannerimage: e.target.files[0] })} />
+                <label>Banner Image {editingId ? "" : "*"}</label>
+                <input type="file" required={!editingId} onChange={e => setFormData({ ...formData, bannerimage: e.target.files[0] })} />
               </div>
-              <button type="submit" className="btn-primary form-grid-submit" disabled={loading}>
-                <Save size={16} />
-                <span>{loading ? "SAVING..." : "ADD BANNER"}</span>
-              </button>
+              <div style={{ display: "flex", gap: "10px", alignSelf: "flex-end" }}>
+                <button type="submit" className="btn-primary form-grid-submit" disabled={loading}>
+                  <Save size={16} />
+                  <span>{loading ? "SAVING..." : (editingId ? "UPDATE" : "ADD BANNER")}</span>
+                </button>
+                {editingId && (
+                  <button 
+                    type="button" 
+                    className="btn-secondary" 
+                    onClick={() => {
+                      setEditingId(null);
+                      setFormData({ bannername: "", description: "", bannerimage: null });
+                    }}
+                    style={{ height: "48px", borderRadius: "12px", padding: "0 20px" }}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
           </form>
         </div>
@@ -107,6 +151,7 @@ const TradizionsBanners = () => {
                   <th>Image</th>
                   <th>Banner Name</th>
                   <th>Description</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -116,13 +161,24 @@ const TradizionsBanners = () => {
                     <td><span className="id-badge-text">{(currentPage - 1) * itemsPerPage + i + 1}</span></td>
                     <td>
                       {b.bannerimage ? (
-                        <img src={process.env.NEXT_PUBLIC_IMAGE_URL ? process.env.NEXT_PUBLIC_IMAGE_URL + b.bannerimage : b.bannerimage} alt={b.bannername} style={{ width: 100, height: 50, objectFit: 'cover', borderRadius: '8px' }} />
+                        <img src={`${IMAGE_URL}${b.bannerimage}`} alt={b.bannername} style={{ width: 100, height: 50, objectFit: 'cover', borderRadius: '8px' }} />
                       ) : (<div style={{ width: 100, height: 50, backgroundColor: '#eee', borderRadius: '8px' }} />)}
                     </td>
                     <td><span className="name-text">{b.bannername}</span></td>
                     <td><span style={{ fontSize: '13px', color: '#666' }}>{b.description}</span></td>
                     <td>
+                      <label className="switch">
+                        <input 
+                          type="checkbox" 
+                          checked={b.status === "active" || b.status === 1}
+                          onChange={() => handleStatusToggle(b.bannerid, b.status)}
+                        />
+                        <span className="slider"></span>
+                      </label>
+                    </td>
+                    <td>
                       <div className="action-cell">
+                        <button className="action-btn edit" onClick={() => handleEdit(b)} style={{ marginRight: "8px" }}><Edit size={16} /></button>
                         <button className="action-btn delete" onClick={() => handleDelete(b.bannerid)}><Trash2 size={16} /></button>
                       </div>
                     </td>

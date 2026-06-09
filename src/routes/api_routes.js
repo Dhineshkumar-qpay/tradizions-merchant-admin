@@ -43,7 +43,7 @@ const APIROUTES = {
   CALCULATORORDERDETAILS: "/monthly/order-detail",
   CALCULATORORDERSTATUSUPDATE: "/monthly/update-order-status",
   GETPROFILE: "/auth/profile",
-  
+
   // New modules API routes
   MENUPAGES: "/menu/merchant-menus",
   GETALLUSERS: "/admin/getallusers",
@@ -57,6 +57,8 @@ const APIROUTES = {
   GETALLBANNER: "/banner/all-banners",
   ADDBANNER: "/banner/addbanner",
   DELETEBANNER: "/banner/delete-banner",
+  UPDATEBANNERSTATUS: "/banner/update-banner-status",
+  UPDATEBANNER: "/banner/update-banner",
 
   // uploads
   UPLOADPRODUCTIMAGE: "/business/upload-product-image",
@@ -65,3 +67,5 @@ const APIROUTES = {
 };
 
 export { APIROUTES };
+
+export const IMAGE_URL = "https://demo.sevanta.in/api";

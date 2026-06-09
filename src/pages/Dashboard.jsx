@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  Package,
+import { Loader2, Package,
   TrendingUp,
   Users,
   ShoppingBag,
   ArrowUpRight,
   ArrowDownRight,
   ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+  ChevronRight, } from 'lucide-react';
 import "./Dashboard.css";
 import { API } from "../service/api_service";
 import { APIROUTES } from "../routes/api_routes";
@@ -186,7 +184,7 @@ const Dashboard = () => {
             height: "300px",
           }}
         >
-          <div className="circular-loader"></div>
+          <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
         </div>
       ) : (
         <>

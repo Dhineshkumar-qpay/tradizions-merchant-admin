@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, Trash2, Plus, ChevronLeft, ChevronRight, Save } from "lucide-react";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./Subcategories.css";
 
 const TradizionsGoals = () => {
@@ -116,7 +116,7 @@ const TradizionsGoals = () => {
                     <td><span className="id-badge-text">{(currentPage - 1) * itemsPerPage + i + 1}</span></td>
                     <td>
                       {g.goalimage ? (
-                        <img src={process.env.NEXT_PUBLIC_IMAGE_URL ? process.env.NEXT_PUBLIC_IMAGE_URL + g.goalimage : g.goalimage} alt={g.goalname} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '8px' }} />
+                        <img src={`${IMAGE_URL}${g.goalimage}`} alt={g.goalname} style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '8px' }} />
                       ) : ( <div style={{width: 50, height: 50, backgroundColor: '#eee', borderRadius: '8px'}} /> )}
                     </td>
                     <td><span className="name-text">{g.goalname}</span></td>

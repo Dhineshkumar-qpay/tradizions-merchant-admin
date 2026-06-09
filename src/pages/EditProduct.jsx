@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./AddProduct.css";
 
 const EditProduct = () => {
@@ -321,10 +321,9 @@ const EditProduct = () => {
 
   const getImageUrl = (path) => {
     if (!path) return null;
-    if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3003/api";
-    const origin = base.replace(/\/api\/?$/, "");
-    return `${origin}${path}`;
+    if (path.startsWith("http")) return path;
+  
+    return `${IMAGE_URL}${path}`;
   };
 
   return (
@@ -392,7 +391,7 @@ const EditProduct = () => {
         <div
           style={{ display: "flex", justifyContent: "center", padding: "80px" }}
         >
-          <div className="circular-loader"></div>
+          <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
         </div>
       ) : (
         <form className="product-form" onSubmit={handleSaveProduct}>
@@ -717,7 +716,7 @@ const EditProduct = () => {
                     />
                   ) : productData.productimage ? (
                     <img
-                      src={getImageUrl(productData.productimage)}
+                      src={`${IMAGE_URL}${productData.productimage}`}
                       alt="Main product"
                       style={{
                         width: "100%",

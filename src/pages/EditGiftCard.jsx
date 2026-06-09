@@ -11,7 +11,7 @@ import {
   Gift,
 } from "lucide-react";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./AddProduct.css";
 
 const EditGiftCard = () => {
@@ -57,7 +57,7 @@ const EditGiftCard = () => {
       setError("");
       try {
         // Fetch Categories
-        const catRes = await API.post(APIROUTES.GETALLCATEGORIES,{type: "all"});
+        const catRes = await API.post(APIROUTES.GETALLCATEGORIES, { type: "all" });
         const catData = catRes.data?.data || catRes.data;
         if (Array.isArray(catData)) {
           setCategories(catData);
@@ -214,13 +214,6 @@ const EditGiftCard = () => {
     }
   };
 
-  const getImageUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3003/api";
-    const origin = base.replace(/\/api\/?$/, "");
-    return `${origin}${path}`;
-  };
 
   return (
     <div className="add-product-container">
@@ -251,7 +244,7 @@ const EditGiftCard = () => {
 
       {loading ? (
         <div style={{ display: "flex", justifyContent: "center", padding: "80px" }}>
-          <div className="circular-loader"></div>
+          <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
         </div>
       ) : (
         <form className="product-form" onSubmit={handleUpdateGift}>
@@ -367,7 +360,7 @@ const EditGiftCard = () => {
                 {giftimage ? (
                   <img src={URL.createObjectURL(giftimage)} alt="Selected Box" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : formData.giftimage ? (
-                  <img src={getImageUrl(formData.giftimage)} alt="Current Box" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={`${IMAGE_URL}${formData.giftimage}`} alt="Current Box" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
                   <>
                     <ImageIcon size={32} />

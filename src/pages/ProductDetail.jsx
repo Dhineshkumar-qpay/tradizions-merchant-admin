@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import {
-  ArrowLeft,
+import { Loader2, ArrowLeft,
   Edit,
   Tag,
   Package,
@@ -12,10 +11,9 @@ import {
   Award,
   Flame,
   Info,
-  Sparkles,
-} from "lucide-react";
+  Sparkles, } from 'lucide-react';
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./AddProduct.css";
 
 const ProductDetail = () => {
@@ -61,9 +59,7 @@ const ProductDetail = () => {
   const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3003/api";
-    const origin = base.replace(/\/api\/?$/, "");
-    return `${origin}${path}`;
+    return `${IMAGE_URL}${path}`;
   };
 
   const getStatusClass = (status) => {
@@ -77,7 +73,7 @@ const ProductDetail = () => {
       <div
         style={{ display: "flex", justifyContent: "center", padding: "80px" }}
       >
-        <div className="circular-loader"></div>
+        <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
       </div>
     );
   }

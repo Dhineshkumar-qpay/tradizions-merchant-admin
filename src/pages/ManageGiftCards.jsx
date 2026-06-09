@@ -14,43 +14,36 @@ import {
   Loader2,
 } from "lucide-react";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./ManageGiftCards.css";
 
 const ManageGiftCards = () => {
   const fileInputRef = useRef(null);
+  const previewContainerRef = useRef(null);
 
   // Initial Seeded Gift Cards for Immediate Premium Display / Fallback
   const initialGiftCards = [
     {
       giftcardid: 101,
-      bid: 1,
       cardname: "₹500 Birthday Gift Card",
-      cardprice: 500,
       cardimage: null,
       status: "active",
     },
     {
       giftcardid: 102,
-      bid: 1,
       cardname: "₹1000 Festive Gift Voucher",
-      cardprice: 1000,
       cardimage: null,
       status: "active",
     },
     {
       giftcardid: 103,
-      bid: 1,
       cardname: "₹2500 Anniversary Luxury Card",
-      cardprice: 2500,
       cardimage: null,
       status: "active",
     },
   ];
 
   // States
-  const [businesses, setBusinesses] = useState([]);
-  const [selectedBid, setSelectedBid] = useState("");
   const [giftCards, setGiftCards] = useState(initialGiftCards);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -60,6 +53,37 @@ const ManageGiftCards = () => {
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+
+  // Drag state
+  const [textPos, setTextPos] = useState({ x: 50, y: 50 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    const handleGlobalMouseMove = (e) => {
+      if (!isDragging || !previewContainerRef.current) return;
+      const rect = previewContainerRef.current.getBoundingClientRect();
+      let x = ((e.clientX - rect.left) / rect.width) * 100;
+      let y = ((e.clientY - rect.top) / rect.height) * 100;
+
+      // Keep within image boundaries
+      x = Math.max(5, Math.min(95, x));
+      y = Math.max(5, Math.min(95, y));
+      setTextPos({ x, y });
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      window.addEventListener("mousemove", handleGlobalMouseMove);
+      window.addEventListener("mouseup", handleGlobalMouseUp);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleGlobalMouseMove);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+    };
+  }, [isDragging]);
 
   // Filters & Action States
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,40 +95,15 @@ const ManageGiftCards = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Fetch businesses on mount
+  // Fetch gift cards on mount
   useEffect(() => {
-    const fetchBusinesses = async () => {
-      try {
-        const response = await API.post(APIROUTES.GETALLBUSINESS);
-        const data = response.data?.data || response.data;
-        if (Array.isArray(data) && data.length > 0) {
-          setBusinesses(data);
-          setSelectedBid(data[0].bid);
-        } else {
-          // Fallback business
-          setBusinesses([{ bid: 1, businessname: "Main Tradizions Store" }]);
-          setSelectedBid(1);
-        }
-      } catch (err) {
-        console.warn("Failed to load businesses, using fallback:", err);
-        setBusinesses([{ bid: 1, businessname: "Main Tradizions Store" }]);
-        setSelectedBid(1);
-      }
-    };
-    fetchBusinesses();
+    fetchGiftCards();
   }, []);
 
-  // Fetch gift cards when selected bid changes
-  useEffect(() => {
-    if (selectedBid) {
-      fetchGiftCards(selectedBid);
-    }
-  }, [selectedBid]);
-
-  const fetchGiftCards = async (bid) => {
+  const fetchGiftCards = async () => {
     setLoading(true);
     try {
-      const response = await API.post(APIROUTES.GETGIFTCARDS, { bid: Number(bid) });
+      const response = await API.post(APIROUTES.GETGIFTCARDS, {});
       const data = response.data?.data || response.data;
       if (Array.isArray(data)) {
         if (data.length > 0) {
@@ -122,14 +121,6 @@ const ManageGiftCards = () => {
       setLoading(false);
       setCurrentPage(1);
     }
-  };
-
-  const getImageUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3003/api";
-    const origin = base.replace(/\/api\/?$/, "");
-    return `${origin}${path}`;
   };
 
   const handleFileChange = (e) => {
@@ -171,8 +162,6 @@ const ManageGiftCards = () => {
         formData.append("cardimage", imageFile);
       }
       formData.append("cardname", cardName);
-      formData.append("cardprice", Number(price));
-      formData.append("bid", Number(selectedBid || 1));
 
       await API.post(APIROUTES.ADDGIFTCARD, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -184,15 +173,13 @@ const ManageGiftCards = () => {
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
 
-      fetchGiftCards(selectedBid);
+      fetchGiftCards();
     } catch (err) {
       console.warn("Add Gift Card API Error, using fallback:", err);
 
       const localNew = {
         giftcardid: Date.now(),
-        bid: Number(selectedBid || 1),
         cardname: cardName,
-        cardprice: Number(price),
         cardimage: imagePreview || null,
         status: "active",
       };
@@ -211,7 +198,6 @@ const ManageGiftCards = () => {
   const handleDeleteGiftCard = async () => {
     try {
       await API.post(APIROUTES.DELETEGIFTCARD, {
-        bid: Number(selectedBid || 1),
         giftcardid: Number(showDeleteConfirm),
       });
       setGiftCards(giftCards.filter((card) => card.giftcardid !== showDeleteConfirm));
@@ -228,8 +214,7 @@ const ManageGiftCards = () => {
   // Filtered Gift Cards
   const filteredCards = giftCards.filter(
     (card) =>
-      card.cardname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      card.cardprice?.toString().includes(searchTerm)
+      card.cardname?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Pagination Math
@@ -287,58 +272,101 @@ const ManageGiftCards = () => {
             <h2>Create Gift Card</h2>
           </div>
           <form onSubmit={handleAddGiftCard} className="gift-card-form-panel">
-            <div className="gift-card-horizontal-form">
-              <div className="form-group-custom">
-                <label>Business *</label>
-                <select
-                  value={selectedBid}
-                  onChange={(e) => setSelectedBid(e.target.value)}
-                  required
+            <div className="gift-card-horizontal-form" style={{ display: "flex", gap: "30px", alignItems: "flex-start", flexWrap: "wrap", width: "100%" }}>
+              {/* Left Side: Customize Gift Card Image */}
+              <div className="form-group-custom" style={{ flex: "1.2 1 350px", minWidth: "300px" }}>
+                <label>Customize Gift Card Image</label>
+                <div
+                  className="image-upload-wrapper"
+                  onClick={(e) => {
+                    if (!imagePreview) triggerFileSelect();
+                  }}
+                  style={{
+                    height: "300px",
+                    border: imagePreview ? "none" : "1.5px dashed #edf2e9",
+                    background: imagePreview ? "transparent" : "#f8fbf6",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    position: "relative",
+                    overflow: "hidden",
+                    padding: 0,
+                    width: "100%"
+                  }}
                 >
-                  {businesses.map((b) => (
-                    <option key={b.bid} value={b.bid}>
-                      {b.businessname}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group-custom">
-                <label>Card Name *</label>
-                <input
-                  type="text"
-                  placeholder="e.g. ₹1000 Holiday Gift Card"
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="form-group-custom">
-                <label>Card Image</label>
-                <div className="image-upload-wrapper" onClick={triggerFileSelect}>
                   {imagePreview ? (
-                    <>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <img src={imagePreview} alt="Preview" className="preview-thumb" />
-                        <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-main)" }}>Image Selected</span>
+                    <div
+                      ref={previewContainerRef}
+                      style={{
+                        position: "relative",
+                        display: "inline-block",
+                        maxHeight: "100%",
+                        maxWidth: "100%"
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        style={{ maxHeight: "300px", maxWidth: "100%", objectFit: "contain", display: "block" }}
+                      />
+                      <div
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsDragging(true);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          position: "absolute",
+                          top: `${textPos.y}%`,
+                          left: `${textPos.x}%`,
+                          transform: "translate(-50%, -50%)",
+                          color: "#ffffff",
+                          fontSize: "28px",
+                          fontWeight: "800",
+                          textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
+                          textAlign: "center",
+                          width: "90%",
+                          cursor: isDragging ? "grabbing" : "grab",
+                          userSelect: "none",
+                          wordWrap: "break-word"
+                        }}
+                      >
+                        {cardName || "Your Card Name Here"}
                       </div>
                       <button
                         type="button"
-                        onClick={removeSelectedImage}
-                        style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeSelectedImage(e);
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: "10px",
+                          right: "10px",
+                          background: "var(--white)",
+                          border: "1px solid #edf2e9",
+                          color: "var(--status-out, #dc2626)",
+                          cursor: "pointer",
+                          borderRadius: "50%",
+                          width: "32px",
+                          height: "32px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
+                        }}
                       >
                         <X size={16} />
                       </button>
-                    </>
+                    </div>
                   ) : (
-                    <>
-                      <div className="placeholder-text">
-                        <ImageIcon size={18} />
-                        <span>Upload Card Design</span>
-                      </div>
-                      <span style={{ fontSize: "12px", color: "var(--primary)", fontWeight: "600" }}>Browse</span>
-                    </>
+                    <div style={{ textAlign: "center", color: "var(--text-muted)", width: "100%" }}>
+                      <ImageIcon size={48} style={{ margin: "0 auto 12px", color: "var(--primary)" }} />
+                      <span style={{ display: "block", fontSize: "14px", fontWeight: "500", marginBottom: "6px" }}>Upload Card Design</span>
+                      <span style={{ fontSize: "12px", color: "var(--primary)", fontWeight: "600" }}>Browse files to drag here</span>
+                    </div>
                   )}
                   <input
                     type="file"
@@ -350,14 +378,42 @@ const ManageGiftCards = () => {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="btn-primary form-grid-submit"
-                disabled={submitting}
-              >
-                {submitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                <span>{submitting ? "SAVING..." : "ADD GIFT CARD"}</span>
-              </button>
+              {/* Right Side: Form Inputs */}
+              <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "24px" }}>
+                <div className="form-group-custom" style={{ width: "100%" }}>
+                  <label>Card Name *</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. ₹1000 Holiday Gift Card"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    required
+                    style={{ width: "100%" }}
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={submitting}
+                  style={{
+                    width: "100%",
+                    fontWeight: "600",
+                    letterSpacing: "0.5px",
+                    borderRadius: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    height: "48px",
+                    cursor: "pointer",
+                    border: "none",
+                  }}
+                >
+                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  <span>{submitting ? "SAVING..." : "ADD GIFT CARD"}</span>
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -369,27 +425,10 @@ const ManageGiftCards = () => {
               <Search size={18} />
               <input
                 type="text"
-                placeholder="Search gift cards by name or price..."
+                placeholder="Search gift cards by name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </div>
-
-            <div className="filter-actions">
-              <span className="filter-label">
-                <Filter size={14} /> Filter by Business:
-              </span>
-              <select
-                className="business-filter-select"
-                value={selectedBid}
-                onChange={(e) => setSelectedBid(e.target.value)}
-              >
-                {businesses.map((b) => (
-                  <option key={b.bid} value={b.bid}>
-                    {b.businessname}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
@@ -414,7 +453,7 @@ const ManageGiftCards = () => {
                       <td>
                         <div className="card-img-box">
                           {card.cardimage ? (
-                            <img src={getImageUrl(card.cardimage)} alt={card.cardname} />
+                            <img src={`${IMAGE_URL}${card.cardimage}`} alt={card.cardname} />
                           ) : (
                             <CreditCard size={24} />
                           )}
@@ -520,3 +559,4 @@ const ManageGiftCards = () => {
 };
 
 export default ManageGiftCards;
+

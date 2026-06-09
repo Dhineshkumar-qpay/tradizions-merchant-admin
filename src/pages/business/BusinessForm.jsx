@@ -210,6 +210,7 @@ const BusinessForm = () => {
         if (formData.businessimage instanceof File) {
           businessFormData.append("businessimage", formData.businessimage);
         }
+        
         await API.post(APIROUTES.ADDBUSINESSINFO, businessFormData, {
           headers: { "Content-Type": "multipart/form-data" },
         });

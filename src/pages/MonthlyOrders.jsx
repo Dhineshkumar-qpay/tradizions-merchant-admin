@@ -345,7 +345,7 @@ const MonthlyOrders = () => {
                 padding: "40px",
               }}
             >
-              <div className="circular-loader"></div>
+              <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
             </div>
           ) : filteredOrders.length > 0 ? (
             <table className="orders-table">
@@ -567,7 +567,7 @@ const MonthlyOrders = () => {
                     padding: "40px",
                   }}
                 >
-                  <div className="circular-loader"></div>
+                  <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
                 </div>
               ) : orderDetails ? (
                 <>

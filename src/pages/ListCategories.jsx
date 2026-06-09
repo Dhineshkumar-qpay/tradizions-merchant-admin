@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Plus,
+import { Loader2, Plus,
   Search,
   Edit,
   Trash2,
@@ -12,11 +11,10 @@ import {
   AlertCircle,
   Eye,
   Calendar,
-  Package,
-} from "lucide-react";
+  Package, } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./CategoryManagement.css";
 const ListCategories = () => {
   const navigate = useNavigate();
@@ -38,8 +36,7 @@ const ListCategories = () => {
   const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3003/api";
-    const origin = base.replace(/\/api\/?$/, ""); // strip /api
+    const base = "https://demo.sevanta.in/api";
     return `${origin}${path}`;
   };
 
@@ -178,7 +175,7 @@ const ListCategories = () => {
 
         <div className="table-responsive">
           {loading ? (
-            <div className="circular-loader"></div>
+            <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
           ) : filteredCategories.length > 0 ? (
             <table className="category-table">
               <thead>
@@ -199,7 +196,7 @@ const ListCategories = () => {
                       <div className="cat-img-box">
                         {cat.categoryimage ? (
                           <img
-                            src={getImageUrl(cat.categoryimage)}
+                            src={`${IMAGE_URL}${cat.categoryimage}`}
                             alt={cat.categoryname}
                           />
                         ) : (
@@ -310,7 +307,7 @@ const ListCategories = () => {
                 <div className="cat-large-img">
                   {showDetailDrawer.categoryimage ? (
                     <img
-                      src={getImageUrl(showDetailDrawer.categoryimage)}
+                      src={`${IMAGE_URL}${showDetailDrawer.categoryimage}`}
                       alt={showDetailDrawer.categoryname}
                     />
                   ) : (

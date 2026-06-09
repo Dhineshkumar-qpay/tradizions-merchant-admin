@@ -17,7 +17,7 @@ import {
   Grid,
 } from "lucide-react";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 import "./Subcategories.css";
 
 const Subcategories = () => {
@@ -60,10 +60,8 @@ const Subcategories = () => {
   // Image Absolute Path Resolver
   const getImageUrl = (path) => {
     if (!path) return null;
-    if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3000/api";
-    const origin = base.replace(/\/api\/?$/, "");
-    return `${origin}${path}`;
+    if (path.startsWith("http")) return path;
+    return `${IMAGE_URL}${path}`;
   };
 
   const fetchCategories = async () => {

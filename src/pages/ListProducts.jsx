@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Edit,
+import { Loader2, Edit,
   Trash2,
   Filter,
   Download,
@@ -8,12 +7,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
-  Image as ImageIcon,
-} from "lucide-react";
+  Image as ImageIcon, } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import "./ListProducts.css";
 import { API } from "../service/api_service";
-import { APIROUTES } from "../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../routes/api_routes";
 
 const ListProducts = () => {
   const navigate = useNavigate();
@@ -68,9 +66,7 @@ const ListProducts = () => {
   const getImageUrl = (path) => {
     if (!path) return null;
     if (path.startsWith("http") || path.startsWith("data:")) return path;
-    const base = API.defaults.baseURL || "http://localhost:3003/api";
-    const origin = base.replace(/\/api\/?$/, ""); // strip /api
-    return `${origin}${path}`;
+    return `${IMAGE_URL}${path}`;
   };
 
   const getStatusClass = (status) => {
@@ -188,7 +184,7 @@ const ListProducts = () => {
 
         <div className="table-responsive thin-scrollbar">
           {loading ? (
-            <div className="circular-loader"></div>
+            <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
           ) : displayedProducts.length === 0 ? (
             <div
               style={{
@@ -229,7 +225,7 @@ const ListProducts = () => {
                       >
                         {p.productimage ? (
                           <img
-                            src={getImageUrl(p.productimage)}
+                            src={`${IMAGE_URL}${p.productimage}`}
                             alt={p.productname}
                             style={{
                               width: "100%",

@@ -407,7 +407,7 @@ const Orders = () => {
                 padding: "40px",
               }}
             >
-              <div className="circular-loader"></div>
+              <Loader2 size={32} className="animate-spin" style={{ margin: "0 auto", color: "var(--primary)" }} />
             </div>
           ) : filteredOrders.length > 0 ? (
             <table className="orders-table">
@@ -1389,6 +1389,18 @@ const Orders = () => {
 const GiftCardEditor = ({ previewGiftCard, onClose }) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const containerRef = React.useRef(null);
+  const [scaleFactor, setScaleFactor] = useState(1);
+
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        setScaleFactor(entry.contentRect.width / 400);
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const [msgConfig, setMsgConfig] = useState({
     x: 50, y: 40,
@@ -1586,7 +1598,7 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
         <div
           className="modal-content animate-pop"
           onClick={(e) => e.stopPropagation()}
-          style={{ width: "95%", maxWidth: "800px", padding: 0, overflow: "hidden", borderRadius: "12px", background: "#fff", display: "flex", flexDirection: "column", maxHeight: "90vh" }}
+          style={{ width: "95%", maxWidth: "1100px", padding: 0, overflow: "hidden", borderRadius: "12px", background: "#fff", display: "flex", flexDirection: "column", maxHeight: "90vh" }}
         >
           {/* Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", borderBottom: "1px solid #eee" }}>
@@ -1598,22 +1610,31 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
           <div style={{ display: "flex", flexWrap: "wrap", overflow: "auto" }}>
             
             {/* Preview Column */}
-            <div style={{ flex: "1 1 400px", padding: "20px", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", borderRight: "1px solid #eee" }}>
+            <div style={{ flex: "2 1 600px", padding: "20px", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", borderRight: "1px solid #eee", justifyContent: "center" }}>
                <div 
                  ref={containerRef}
                  style={{
                    position: "relative",
-                   width: "100%",
-                   aspectRatio: "1.5 / 1",
-                   backgroundImage: `url(${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage})`,
-                   backgroundSize: "cover",
-                   backgroundPosition: "center",
+                   display: "inline-block",
+                   maxWidth: "100%",
                    borderRadius: "8px",
                    overflow: "hidden",
                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                    userSelect: "none"
                  }}
                >
+                  <img 
+                    src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage}`}
+                    alt="Gift Card Preview"
+                    style={{
+                      display: "block",
+                      maxWidth: "100%",
+                      maxHeight: "75vh",
+                      width: "auto",
+                      height: "auto",
+                      objectFit: "contain"
+                    }}
+                  />
                   <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(255,255,255,0.4)", pointerEvents: "none" }}></div>
                   
                   {/* Draggable Message */}
@@ -1633,12 +1654,12 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
                   >
                     <p style={{ 
                       fontFamily: msgConfig.family, 
-                      fontSize: `clamp(12px, ${msgConfig.size * 0.15}vw, ${msgConfig.size}px)`, 
+                      fontSize: `${msgConfig.size * scaleFactor}px`, 
                       fontWeight: msgConfig.weight, 
                       color: msgConfig.color,
                       fontStyle: msgConfig.style,
                       opacity: msgConfig.opacity,
-                      letterSpacing: `${msgConfig.letterSpacing}px`,
+                      letterSpacing: `${msgConfig.letterSpacing * scaleFactor}px`,
                       textTransform: msgConfig.transform,
                       margin: 0,
                       textShadow: "0 1px 2px rgba(255,255,255,0.8)"
@@ -1658,17 +1679,18 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
                       textAlign: senderConfig.align,
                       cursor: draggingTarget === 'sender' ? "grabbing" : "grab",
                       zIndex: 10,
-                      border: activeTab === 'sender' ? "1px dashed #db2777" : "1px dashed transparent"
+                      border: activeTab === 'sender' ? "1px dashed #db2777" : "1px dashed transparent",
+                      whiteSpace: "nowrap"
                     }}
                   >
                     <p style={{ 
                       fontFamily: senderConfig.family, 
-                      fontSize: `clamp(10px, ${senderConfig.size * 0.15}vw, ${senderConfig.size}px)`, 
+                      fontSize: `${senderConfig.size * scaleFactor}px`, 
                       fontWeight: senderConfig.weight, 
                       color: senderConfig.color,
                       fontStyle: senderConfig.style,
                       opacity: senderConfig.opacity,
-                      letterSpacing: `${senderConfig.letterSpacing}px`,
+                      letterSpacing: `${senderConfig.letterSpacing * scaleFactor}px`,
                       textTransform: senderConfig.transform,
                       margin: 0,
                       textShadow: "0 1px 2px rgba(255,255,255,0.8)"
