@@ -133,7 +133,7 @@ const Orders = () => {
     filteredOrders.forEach(order => {
       const orderId = order.orderid || order.orderitemid;
       const products = order.items && order.items.length > 0 
-        ? order.items.map((i) => i.productname).join(" | ") 
+        ? order.items.map((i) => i.giftpack?.giftpackname || i.product?.productname || i.productname).join(" | ") 
         : order.ordertype || order.itemtype || "Normal";
       
       const row = [
@@ -445,12 +445,12 @@ const Orders = () => {
                         }}
                         title={
                           order.items
-                            ? order.items.map((i) => i.productname).join(", ")
+                            ? order.items.map((i) => i.giftpack?.giftpackname || i.product?.productname || i.productname).join(", ")
                             : order.ordertype || "Normal"
                         }
                       >
                         {order.items && order.items.length > 0
-                          ? order.items.map((i) => i.productname).join(", ")
+                          ? order.items.map((i) => i.giftpack?.giftpackname || i.product?.productname || i.productname).join(", ")
                           : order.ordertype || order.itemtype || "Normal"}
                       </span>
                     </td>
@@ -792,14 +792,10 @@ const Orders = () => {
                                 }}
                               >
                                 <div className="p-img">
-                                  {item.product?.productimage ||
-                                    item.productimage ? (
+                                  {item.giftpack?.giftpackimage || item.product?.productimage || item.productimage ? (
                                     <img
-                                      src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${item.product?.productimage || item.productimage}`}
-                                      alt={
-                                        item.product?.productname ||
-                                        item.productname
-                                      }
+                                      src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${item.giftpack?.giftpackimage || item.product?.productimage || item.productimage}`}
+                                      alt={item.giftpack?.giftpackname || item.product?.productname || item.productname}
                                       style={{
                                         width: "40px",
                                         height: "40px",
@@ -813,8 +809,7 @@ const Orders = () => {
                                 </div>
                                 <div className="p-info">
                                   <span className="p-name">
-                                    {item.product?.productname ||
-                                      item.productname}
+                                    {item.giftpack?.giftpackname || item.product?.productname || item.productname}
                                   </span>
                                   <span className="p-qty">
                                     Qty: {item.quantity || 1}
@@ -823,11 +818,72 @@ const Orders = () => {
                               </div>
                               <div
                                 className="p-price"
-                                style={{ minWidth: "80px", textAlign: "right" }}
+                                style={{ minWidth: "80px", textAlign: "right", display: "flex", flexDirection: "column", gap: "2px" }}
                               >
-                                ₹{item.totalprice || item.price || 0}
+                                <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "500" }}>
+                                  ₹{item.price || 0} × {item.quantity || 1}
+                                </span>
+                                <span style={{ fontWeight: "600", color: "var(--text-main)" }}>
+                                  ₹{item.totalprice || item.price || 0}
+                                </span>
                               </div>
                             </div>
+
+                            {/* Gift Pack Products */}
+                            {item.giftpackproducts && item.giftpackproducts.length > 0 && (
+                              <div
+                                style={{
+                                  width: "100%",
+                                  padding: "10px",
+                                  backgroundColor: "#f8fafc",
+                                  borderRadius: "6px",
+                                  border: "1px solid #e2e8f0",
+                                  marginBottom: "10px",
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontSize: "12px",
+                                    fontWeight: "600",
+                                    color: "var(--text-main)",
+                                    marginBottom: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "6px"
+                                  }}
+                                >
+                                  <Package size={14} /> Gift Pack Contents
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                                  {item.giftpack && (
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", paddingBottom: "6px", borderBottom: "1px dashed #e2e8f0", marginBottom: "2px" }}>
+                                      <span style={{ color: "var(--text-main)", fontWeight: "500" }}>Base Box Price</span>
+                                      <span style={{ color: "var(--text-main)", fontWeight: "600" }}>₹{item.giftpack.giftpackprice || 0}</span>
+                                    </div>
+                                  )}
+                                  {item.giftpackproducts.map((gp, gidx) => (
+                                    <div key={gidx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        {gp.productimage ? (
+                                          <img
+                                            src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${gp.productimage}`}
+                                            alt={gp.productname}
+                                            style={{ width: "24px", height: "24px", objectFit: "cover", borderRadius: "4px" }}
+                                          />
+                                        ) : (
+                                          <div style={{ width: "24px", height: "24px", backgroundColor: "#e2e8f0", borderRadius: "4px" }}></div>
+                                        )}
+                                        <span style={{ color: "var(--text-main)" }}>{gp.productname}</span>
+                                      </div>
+                                      <div style={{ display: "flex", alignItems: "center", gap: "12px", color: "var(--text-muted)", fontWeight: "500" }}>
+                                        <span>₹{gp.sellingprice || gp.price || 0} × {gp.quantity}</span>
+                                        <span style={{ color: "var(--text-main)", fontWeight: "600" }}>₹{gp.totalprice || 0}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
 
                             {/* Product Specific Address */}
                             {item.address && (
