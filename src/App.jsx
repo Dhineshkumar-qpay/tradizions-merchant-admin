@@ -31,6 +31,7 @@ import TradizionsContacts from './pages/TradizionsContacts';
 import TradizionsGoals from './pages/TradizionsGoals';
 import TradizionsBanners from './pages/TradizionsBanners';
 import TradizionsKural from './pages/TradizionsKural';
+import Coupons from './pages/Coupons';
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -74,6 +75,7 @@ function App() {
             <Route path="goals" element={<TradizionsGoals />} />
             <Route path="banners" element={<TradizionsBanners />} />
             <Route path="kural" element={<TradizionsKural />} />
+            <Route path="coupons" element={<Coupons />} />
           </Route>
 
           {/* Fallback */}

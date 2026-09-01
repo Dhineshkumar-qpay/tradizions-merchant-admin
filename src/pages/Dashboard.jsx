@@ -133,7 +133,7 @@ const Dashboard = () => {
     },
     {
       title: "Total Revenue",
-      value: "20000",
+      value: dashboardData?.totalrevenue || "0",
       icon: <ArrowUpRight />,
       trend: "",
       isPositive: true,

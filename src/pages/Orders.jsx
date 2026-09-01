@@ -233,6 +233,34 @@ const Orders = () => {
     }
   };
 
+  const handleShiprocketAction = async (actionType, orderId) => {
+    setProcessingId(`shiprocket_${actionType}_${orderId}`);
+    try {
+      let route = "";
+      if (actionType === "assign") route = APIROUTES.ASSIGN_AWB;
+      else if (actionType === "pickup") route = APIROUTES.SCHEDULE_PICKUP;
+      else if (actionType === "label") route = APIROUTES.GENERATE_LABEL;
+      else if (actionType === "cancel") route = APIROUTES.CANCEL_SHIPMENT;
+      
+      const response = await API.post(route, { orderid: Number(orderId) });
+      
+      if (response.data && response.data.statusCode === 200) {
+        alert(response.data.message || "Action successful!");
+        // Refresh the current order details to get new shipping info
+        if (selectedOrder) {
+          handleViewOrder(selectedOrder.order || selectedOrder);
+        }
+      } else {
+        alert("Action failed.");
+      }
+    } catch (error) {
+      console.error(`Error with Shiprocket ${actionType}:`, error);
+      alert(error.response?.data?.message || `Failed to ${actionType} shipment.`);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const handleViewOrder = async (order) => {
     try {
       // Fetch details using the orderid
@@ -1273,12 +1301,18 @@ const Orders = () => {
                         <span>Subtotal</span>
                         <span>
                           ₹
-                          {selectedOrder.order?.totalamount ||
-                            (selectedOrder.price && selectedOrder.quantity
-                              ? selectedOrder.price * selectedOrder.quantity
-                              : selectedOrder.totalprice)}
+                          {(selectedOrder.order?.totalamount || 
+                            selectedOrder.totalprice || 
+                            (selectedOrder.price && selectedOrder.quantity ? selectedOrder.price * selectedOrder.quantity : 0)) + 
+                            (selectedOrder.order?.discount_amount || selectedOrder.discount_amount || 0)}
                         </span>
                       </div>
+                      {(selectedOrder.order?.discount_amount > 0 || selectedOrder.discount_amount > 0) && (
+                        <div className="row" style={{ color: "#16a34a" }}>
+                          <span>Coupon Discount ({selectedOrder.order?.coupon_code || selectedOrder.coupon_code || ''})</span>
+                          <span>-₹{selectedOrder.order?.discount_amount || selectedOrder.discount_amount}</span>
+                        </div>
+                      )}
                       {selectedOrder.giftcardprice && (
                         <div className="row">
                           <span>Gift Card</span>
@@ -1301,6 +1335,80 @@ const Orders = () => {
 
                   {/* Action Controls */}
                   <div className="drawer-actions">
+                    {/* Shiprocket Logistics Controls */}
+                    {selectedOrder.order?.shipping_info && (
+                      <div className="action-group" style={{ marginBottom: "16px", padding: "16px", border: "1px solid #e2e8f0", borderRadius: "8px", backgroundColor: "#f8fafc" }}>
+                        <h4 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#1e293b", display: "flex", alignItems: "center", gap: "6px" }}>
+                          <Truck size={16} /> Logistics Management
+                        </h4>
+                        
+                        <div style={{ fontSize: "13px", color: "#475569", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                          <div><strong>AWB:</strong> {selectedOrder.order.shipping_info.awb_code || "Not Assigned"}</div>
+                          <div><strong>Courier:</strong> {selectedOrder.order.shipping_info.courier_name || "N/A"}</div>
+                          <div><strong>Shiprocket Status:</strong> {selectedOrder.order.shipping_info.shipment_status || "N/A"}</div>
+                        </div>
+
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                          {!selectedOrder.order.shipping_info.awb_code && (
+                            <button
+                              className="btn-primary"
+                              style={{ padding: "6px 12px", fontSize: "12px" }}
+                              onClick={() => handleShiprocketAction('assign', selectedOrder.order.orderid)}
+                              disabled={processingId === `shiprocket_assign_${selectedOrder.order.orderid}`}
+                            >
+                              {processingId === `shiprocket_assign_${selectedOrder.order.orderid}` ? <Loader2 size={14} className="animate-spin" /> : "Assign AWB"}
+                            </button>
+                          )}
+                          
+                          {selectedOrder.order.shipping_info.awb_code && (
+                            <>
+                              <button
+                                className="btn-secondary"
+                                style={{ padding: "6px 12px", fontSize: "12px", backgroundColor: "#3b82f6", color: "white", border: "none" }}
+                                onClick={() => handleShiprocketAction('pickup', selectedOrder.order.orderid)}
+                                disabled={processingId === `shiprocket_pickup_${selectedOrder.order.orderid}`}
+                              >
+                                {processingId === `shiprocket_pickup_${selectedOrder.order.orderid}` ? <Loader2 size={14} className="animate-spin" /> : "Schedule Pickup"}
+                              </button>
+                              
+                              <button
+                                className="btn-secondary"
+                                style={{ padding: "6px 12px", fontSize: "12px", backgroundColor: "#10b981", color: "white", border: "none" }}
+                                onClick={() => handleShiprocketAction('label', selectedOrder.order.orderid)}
+                                disabled={processingId === `shiprocket_label_${selectedOrder.order.orderid}`}
+                              >
+                                {processingId === `shiprocket_label_${selectedOrder.order.orderid}` ? <Loader2 size={14} className="animate-spin" /> : "Generate Label"}
+                              </button>
+                            </>
+                          )}
+
+                          {selectedOrder.order.orderstatus !== "delivered" && selectedOrder.order.orderstatus !== "cancelled" && (
+                            <button
+                              className="btn-danger-outline"
+                              style={{ padding: "6px 12px", fontSize: "12px" }}
+                              onClick={() => handleShiprocketAction('cancel', selectedOrder.order.orderid)}
+                              disabled={processingId === `shiprocket_cancel_${selectedOrder.order.orderid}`}
+                            >
+                              {processingId === `shiprocket_cancel_${selectedOrder.order.orderid}` ? <Loader2 size={14} className="animate-spin" /> : "Cancel Shipment"}
+                            </button>
+                          )}
+                        </div>
+                        
+                        {selectedOrder.order.shipping_info.tracking_url && (
+                          <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px dashed #cbd5e1" }}>
+                            <a 
+                              href={selectedOrder.order.shipping_info.tracking_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              style={{ fontSize: "13px", color: "#2563eb", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px", fontWeight: "500" }}
+                            >
+                              <MapPin size={14} /> Track Package Live
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     <div
                       className="action-group"
                       style={{ marginBottom: "16px" }}

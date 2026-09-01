@@ -64,8 +64,14 @@ const APIROUTES = {
   UPLOADPRODUCTIMAGE: "/business/upload-product-image",
   UPLOADPRODUCTIMAGES: "/business/upload-product-images",
   UPLOADGIFTIMAGE: "/business/upload-gift-image",
+  CREATECOUPON: "/coupon/create",
+  GETALLCOUPONS: "/coupon/list",
+  TOGGLECOUPONSTATUS: "/coupon/toggle-status",
+  EDITCOUPON: "/coupon/edit",
+  DELETECOUPON: "/coupon/delete",
 };
 
 export { APIROUTES };
 
-export const IMAGE_URL = "https://demo.sevanta.in/api";
+// export const IMAGE_URL = "https://demo.sevanta.in/api";
+export const IMAGE_URL = "http://localhost:3003";

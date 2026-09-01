@@ -114,8 +114,10 @@ const Login = () => {
         throw new Error("Authentication token not found in response.");
       }
 
-      if (response.data?.data?.role !== "merchant") {
-        toast.error("Only Merchant accounts are allowed to access the admin panel. Please use a valid merchant account.",);
+      const userRole = response.data?.data?.role;
+
+      if (userRole !== "merchant" && userRole !== "admin") {
+        toast.error("Access denied. Only Merchant or Admin accounts are allowed.");
         return;
       }
 
@@ -124,8 +126,8 @@ const Login = () => {
       if (response.data?.data?.userid) {
         localStorage.setItem("userid", String(response.data.data.userid));
       }
-      if (response.data?.data?.role) {
-        localStorage.setItem("role", response.data.data.role);
+      if (userRole) {
+        localStorage.setItem("role", userRole);
       }
 
       setSuccess("Authenticated successfully!");

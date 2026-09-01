@@ -152,6 +152,15 @@ const Layout = () => {
                   )}
                 </React.Fragment>
               ))}
+              <NavLink
+                to="/coupons"
+                className={({ isActive }) =>
+                  isActive ? "nav-link active" : "nav-link"
+                }
+              >
+                <span style={{ fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20 }}>🏷️</span>
+                {!isSidebarCollapsed && <span>Coupons</span>}
+              </NavLink>
             </div>
           </nav>
         </div>
