@@ -133,7 +133,7 @@ const Login = () => {
       setSuccess("Authenticated successfully!");
 
       setTimeout(() => {
-        navigate("/dashboard");
+        window.location.href = "/dashboard";
       }, 1000);
     } catch (err) {
       console.error("Verify OTP Error:", err);

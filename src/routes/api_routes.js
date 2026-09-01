@@ -46,6 +46,8 @@ const APIROUTES = {
 
   // New modules API routes
   MENUPAGES: "/menu/merchant-menus",
+  ALLMENUS: "/menu/all-menu",
+  ADDMENU: "/menu/add-menu",
   GETALLUSERS: "/admin/getallusers",
   GETCONTACTS: "/contact/get-contacts",
   DELETECONTACT: "/contact/delete-contactus",

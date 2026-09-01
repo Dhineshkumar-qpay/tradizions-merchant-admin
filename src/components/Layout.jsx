@@ -8,15 +8,65 @@ import {
   ChevronDown,
   ChevronLeft,
   X,
-  List
+  List,
+  LayoutDashboard,
+  Store,
+  Users,
+  Layers,
+  ShoppingBag,
+  ClipboardList,
+  Gift,
+  BarChart3,
+  Settings,
+  Activity,
+  Star,
+  PhoneCall,
+  BookOpen,
+  Ticket
 } from "lucide-react";
 import { API } from "../service/api_service";
 import { APIROUTES } from "../routes/api_routes";
 import "./Layout.css";
 
+const adminMenuItems = [
+  { menuid: "1", menuname: "Dashboard", menukey: "dashboard", icon: LayoutDashboard },
+  {
+    menuid: "2",
+    menuname: "Merchants",
+    menukey: "merchants",
+    icon: Store,
+    children: [
+      { menuid: "2-1", menuname: "Master Merchant", menukey: "merchants/master", icon: Activity },
+      { menuid: "2-2", menuname: "Product Reviews", menukey: "merchants/reviews", icon: Star },
+    ],
+  },
+  {
+    menuid: "3",
+    menuname: "Categories",
+    menukey: "categories",
+    icon: Layers,
+    children: [
+      { menuid: "3-1", menuname: "Categories", menukey: "categories", icon: Layers },
+      { menuid: "3-2", menuname: "Subcategories", menukey: "categories/subcategories", icon: Layers },
+    ],
+  },
+  { menuid: "4", menuname: "Users", menukey: "users", icon: Users },
+  { menuid: "5", menuname: "Orders", menukey: "orders", icon: ClipboardList },
+  { menuid: "6", menuname: "Reviews", menukey: "reviews", icon: Star },
+  { menuid: "7", menuname: "Thinam Oru Kural", menukey: "kural", icon: BookOpen },
+  { menuid: "8", menuname: "Health Goals", menukey: "health-goals", icon: Activity },
+  { menuid: "9", menuname: "Seasonal Banners", menukey: "banners/seasonal", icon: Gift },
+  { menuid: "10", menuname: "Reports", menukey: "reports", icon: BarChart3 },
+  { menuid: "11", menuname: "Contacts", menukey: "contacts", icon: PhoneCall },
+  { menuid: "12", menuname: "Settings", menukey: "settings", icon: Settings },
+  { menuid: "13", menuname: "Menus", menukey: "menus", icon: List },
+];
+
 const Layout = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
 
   if (!token) {
     return <Navigate to="/login" replace />;
@@ -31,6 +81,10 @@ const Layout = () => {
 
   useEffect(() => {
     const fetchMenus = async () => {
+      if (isAdmin) {
+        setMenus(adminMenuItems);
+        return;
+      }
       try {
         const res = await API.post(APIROUTES.MENUPAGES);
         if (res.data && res.data.statusCode === 200 && res.data.data) {
@@ -54,7 +108,7 @@ const Layout = () => {
 
     fetchMenus();
     fetchProfile();
-  }, []);
+  }, [isAdmin]);
 
   const toggleMenu = (menuName) => {
     if (isSidebarCollapsed) setIsSidebarCollapsed(false);
@@ -63,7 +117,8 @@ const Layout = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    localStorage.removeItem("role");
+    window.location.href = "/login";
   };
 
   // Helper function to format paths correctly
@@ -116,7 +171,11 @@ const Layout = () => {
                         className="nav-link parent"
                         onClick={() => toggleMenu(menu.menukey)}
                       >
-                        <img src={menu.icon} alt={menu.menuname} style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                        {typeof menu.icon === 'string' ? (
+                          <img src={menu.icon} alt={menu.menuname} style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                        ) : (
+                          <menu.icon size={20} />
+                        )}
                         {!isSidebarCollapsed && <span>{menu.menuname}</span>}
                         {!isSidebarCollapsed && (
                           <ChevronDown size={16} className="chevron-icon" />
@@ -128,11 +187,16 @@ const Layout = () => {
                             <NavLink
                               key={child.menuid}
                               to={formatPath(child.menukey)}
+                              end
                               className={({ isActive }) =>
                                 isActive ? "sub-link active" : "sub-link"
                               }
                             >
-                              <img src={child.icon} alt={child.menuname} style={{ width: 16, height: 16, objectFit: 'contain' }} />
+                              {typeof child.icon === 'string' ? (
+                                <img src={child.icon} alt={child.menuname} style={{ width: 16, height: 16, objectFit: 'contain' }} />
+                              ) : (
+                                <child.icon size={16} />
+                              )}
                               <span>{child.menuname}</span>
                             </NavLink>
                           ))}
@@ -142,25 +206,21 @@ const Layout = () => {
                   ) : (
                     <NavLink
                       to={formatPath(menu.menukey)}
+                      end
                       className={({ isActive }) =>
                         isActive ? "nav-link active" : "nav-link"
                       }
                     >
-                      <img src={menu.icon} alt={menu.menuname} style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                      {typeof menu.icon === 'string' ? (
+                        <img src={menu.icon} alt={menu.menuname} style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                      ) : (
+                        <menu.icon size={20} />
+                      )}
                       {!isSidebarCollapsed && <span>{menu.menuname}</span>}
                     </NavLink>
                   )}
                 </React.Fragment>
               ))}
-              <NavLink
-                to="/coupons"
-                className={({ isActive }) =>
-                  isActive ? "nav-link active" : "nav-link"
-                }
-              >
-                <span style={{ fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20 }}>🏷️</span>
-                {!isSidebarCollapsed && <span>Coupons</span>}
-              </NavLink>
             </div>
           </nav>
         </div>

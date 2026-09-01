@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Loader2, Package,
+import {
+  Loader2, Package,
   TrendingUp,
   Users,
   ShoppingBag,
   ArrowUpRight,
   ArrowDownRight,
   ChevronLeft,
-  ChevronRight, } from 'lucide-react';
+  ChevronRight,
+} from 'lucide-react';
 import "./Dashboard.css";
 import { API } from "../service/api_service";
 import { APIROUTES } from "../routes/api_routes";
@@ -582,18 +584,18 @@ const Dashboard = () => {
                               fontWeight: "600",
                               background:
                                 updatingStock === p.productid ||
-                                stockInputs[p.productid] === p.availablestock
+                                  stockInputs[p.productid] === p.availablestock
                                   ? "#e5e7eb"
                                   : "var(--primary)",
                               color:
                                 updatingStock === p.productid ||
-                                stockInputs[p.productid] === p.availablestock
+                                  stockInputs[p.productid] === p.availablestock
                                   ? "#9ca3af"
                                   : "#ffffff",
                               border: "none",
                               cursor:
                                 updatingStock === p.productid ||
-                                stockInputs[p.productid] === p.availablestock
+                                  stockInputs[p.productid] === p.availablestock
                                   ? "not-allowed"
                                   : "pointer",
                             }}
@@ -615,22 +617,22 @@ const Dashboard = () => {
                 if (selectedTab === "In Stock") return p.availablestock > 10;
                 return true;
               }).length === 0 && (
-                <div
-                  style={{
-                    padding: "40px",
-                    textAlign: "center",
-                    color: "#6b7280",
-                    fontSize: "14px",
-                  }}
-                >
-                  <Package
-                    size={32}
-                    color="#9ca3af"
-                    style={{ marginBottom: "12px", opacity: 0.5 }}
-                  />
-                  <p>No products found for this status.</p>
-                </div>
-              )}
+                  <div
+                    style={{
+                      padding: "40px",
+                      textAlign: "center",
+                      color: "#6b7280",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <Package
+                      size={32}
+                      color="#9ca3af"
+                      style={{ marginBottom: "12px", opacity: 0.5 }}
+                    />
+                    <p>No products found for this status.</p>
+                  </div>
+                )}
             </div>
 
             {/* Pagination */}
@@ -641,167 +643,167 @@ const Dashboard = () => {
               if (selectedTab === "In Stock") return p.availablestock > 10;
               return true;
             }).length > 10 && (
-              <div
-                className="pagination-footer"
-                style={{
-                  marginTop: "20px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  borderTop: "1px solid #f3f4f6",
-                  paddingTop: "16px",
-                }}
-              >
-                <p style={{ fontSize: "14px", color: "#6b7280" }}>
-                  Showing{" "}
-                  <strong>
-                    {Math.min(
-                      currentPage * 10,
-                      products.filter((p) => {
-                        if (selectedTab === "Out of Stock")
-                          return p.availablestock === 0;
-                        if (selectedTab === "Low Stock")
-                          return p.availablestock > 0 && p.availablestock <= 10;
-                        if (selectedTab === "In Stock")
-                          return p.availablestock > 10;
-                        return true;
-                      }).length,
-                    )}
-                  </strong>{" "}
-                  of{" "}
-                  <strong>
-                    {
-                      products.filter((p) => {
-                        if (selectedTab === "Out of Stock")
-                          return p.availablestock === 0;
-                        if (selectedTab === "Low Stock")
-                          return p.availablestock > 0 && p.availablestock <= 10;
-                        if (selectedTab === "In Stock")
-                          return p.availablestock > 10;
-                        return true;
-                      }).length
-                    }
-                  </strong>{" "}
-                  products
-                </p>
                 <div
-                  className="page-controls"
-                  style={{ display: "flex", gap: "8px" }}
+                  className="pagination-footer"
+                  style={{
+                    marginTop: "20px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderTop: "1px solid #f3f4f6",
+                    paddingTop: "16px",
+                  }}
                 >
-                  <button
-                    className="btn-page"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(currentPage - 1)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      border: "1px solid #e5e7eb",
-                      background: currentPage === 1 ? "#f3f4f6" : "#ffffff",
-                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    <ChevronLeft
-                      size={16}
-                      color={currentPage === 1 ? "#9ca3af" : "#4b5563"}
-                    />
-                  </button>
-                  <button
-                    className="btn-page active"
-                    style={{
-                      padding: "8px 14px",
-                      borderRadius: "8px",
-                      background: "var(--primary)",
-                      color: "#ffffff",
-                      border: "none",
-                      fontWeight: "600",
-                    }}
-                  >
-                    {currentPage}
-                  </button>
-                  <button
-                    className="btn-page"
-                    disabled={
-                      currentPage >=
-                      Math.ceil(
+                  <p style={{ fontSize: "14px", color: "#6b7280" }}>
+                    Showing{" "}
+                    <strong>
+                      {Math.min(
+                        currentPage * 10,
                         products.filter((p) => {
                           if (selectedTab === "Out of Stock")
                             return p.availablestock === 0;
                           if (selectedTab === "Low Stock")
-                            return (
-                              p.availablestock > 0 && p.availablestock <= 10
-                            );
+                            return p.availablestock > 0 && p.availablestock <= 10;
                           if (selectedTab === "In Stock")
                             return p.availablestock > 10;
                           return true;
-                        }).length / 10,
-                      )
-                    }
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      border: "1px solid #e5e7eb",
-                      background:
-                        currentPage >=
-                        Math.ceil(
-                          products.filter((p) => {
-                            if (selectedTab === "Out of Stock")
-                              return p.availablestock === 0;
-                            if (selectedTab === "Low Stock")
-                              return (
-                                p.availablestock > 0 && p.availablestock <= 10
-                              );
-                            if (selectedTab === "In Stock")
-                              return p.availablestock > 10;
-                            return true;
-                          }).length / 10,
-                        )
-                          ? "#f3f4f6"
-                          : "#ffffff",
-                      cursor:
-                        currentPage >=
-                        Math.ceil(
-                          products.filter((p) => {
-                            if (selectedTab === "Out of Stock")
-                              return p.availablestock === 0;
-                            if (selectedTab === "Low Stock")
-                              return (
-                                p.availablestock > 0 && p.availablestock <= 10
-                              );
-                            if (selectedTab === "In Stock")
-                              return p.availablestock > 10;
-                            return true;
-                          }).length / 10,
-                        )
-                          ? "not-allowed"
-                          : "pointer",
-                    }}
-                  >
-                    <ChevronRight
-                      size={16}
-                      color={
-                        currentPage >=
-                        Math.ceil(
-                          products.filter((p) => {
-                            if (selectedTab === "Out of Stock")
-                              return p.availablestock === 0;
-                            if (selectedTab === "Low Stock")
-                              return (
-                                p.availablestock > 0 && p.availablestock <= 10
-                              );
-                            if (selectedTab === "In Stock")
-                              return p.availablestock > 10;
-                            return true;
-                          }).length / 10,
-                        )
-                          ? "#9ca3af"
-                          : "#4b5563"
+                        }).length,
+                      )}
+                    </strong>{" "}
+                    of{" "}
+                    <strong>
+                      {
+                        products.filter((p) => {
+                          if (selectedTab === "Out of Stock")
+                            return p.availablestock === 0;
+                          if (selectedTab === "Low Stock")
+                            return p.availablestock > 0 && p.availablestock <= 10;
+                          if (selectedTab === "In Stock")
+                            return p.availablestock > 10;
+                          return true;
+                        }).length
                       }
-                    />
-                  </button>
+                    </strong>{" "}
+                    products
+                  </p>
+                  <div
+                    className="page-controls"
+                    style={{ display: "flex", gap: "8px" }}
+                  >
+                    <button
+                      className="btn-page"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid #e5e7eb",
+                        background: currentPage === 1 ? "#f3f4f6" : "#ffffff",
+                        cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      <ChevronLeft
+                        size={16}
+                        color={currentPage === 1 ? "#9ca3af" : "#4b5563"}
+                      />
+                    </button>
+                    <button
+                      className="btn-page active"
+                      style={{
+                        padding: "8px 14px",
+                        borderRadius: "8px",
+                        background: "var(--primary)",
+                        color: "#ffffff",
+                        border: "none",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {currentPage}
+                    </button>
+                    <button
+                      className="btn-page"
+                      disabled={
+                        currentPage >=
+                        Math.ceil(
+                          products.filter((p) => {
+                            if (selectedTab === "Out of Stock")
+                              return p.availablestock === 0;
+                            if (selectedTab === "Low Stock")
+                              return (
+                                p.availablestock > 0 && p.availablestock <= 10
+                              );
+                            if (selectedTab === "In Stock")
+                              return p.availablestock > 10;
+                            return true;
+                          }).length / 10,
+                        )
+                      }
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid #e5e7eb",
+                        background:
+                          currentPage >=
+                            Math.ceil(
+                              products.filter((p) => {
+                                if (selectedTab === "Out of Stock")
+                                  return p.availablestock === 0;
+                                if (selectedTab === "Low Stock")
+                                  return (
+                                    p.availablestock > 0 && p.availablestock <= 10
+                                  );
+                                if (selectedTab === "In Stock")
+                                  return p.availablestock > 10;
+                                return true;
+                              }).length / 10,
+                            )
+                            ? "#f3f4f6"
+                            : "#ffffff",
+                        cursor:
+                          currentPage >=
+                            Math.ceil(
+                              products.filter((p) => {
+                                if (selectedTab === "Out of Stock")
+                                  return p.availablestock === 0;
+                                if (selectedTab === "Low Stock")
+                                  return (
+                                    p.availablestock > 0 && p.availablestock <= 10
+                                  );
+                                if (selectedTab === "In Stock")
+                                  return p.availablestock > 10;
+                                return true;
+                              }).length / 10,
+                            )
+                            ? "not-allowed"
+                            : "pointer",
+                      }}
+                    >
+                      <ChevronRight
+                        size={16}
+                        color={
+                          currentPage >=
+                            Math.ceil(
+                              products.filter((p) => {
+                                if (selectedTab === "Out of Stock")
+                                  return p.availablestock === 0;
+                                if (selectedTab === "Low Stock")
+                                  return (
+                                    p.availablestock > 0 && p.availablestock <= 10
+                                  );
+                                if (selectedTab === "In Stock")
+                                  return p.availablestock > 10;
+                                return true;
+                              }).length / 10,
+                            )
+                            ? "#9ca3af"
+                            : "#4b5563"
+                        }
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </>
       )}

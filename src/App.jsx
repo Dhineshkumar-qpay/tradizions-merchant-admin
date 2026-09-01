@@ -35,7 +35,35 @@ import Coupons from './pages/Coupons';
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
+// Admin Imports
+import MasterDashboard from './master-admin/pages/dashboard/Dashboard';
+import MerchantList from './master-admin/pages/merchants/MerchantList';
+import MerchantCreate from './master-admin/pages/merchants/MerchantCreate';
+import MerchantDetail from './master-admin/pages/merchants/MerchantDetail';
+import MasterProductDetail from './master-admin/pages/products/ProductDetail';
+import MasterGiftCardDetail from './master-admin/pages/giftcards/GiftCardDetail';
+import MerchantProducts from './master-admin/pages/merchants/MerchantProducts';
+import UserList from './master-admin/pages/users/UserList';
+import OrderList from './master-admin/pages/orders/OrderList';
+import OrderDetail from './master-admin/pages/orders/OrderDetail';
+import MasterCategoryList from './master-admin/pages/categories/CategoryList';
+import MasterSubcategoryList from './master-admin/pages/categories/SubcategoryList';
+import ReportList from './master-admin/pages/reports/ReportList';
+import ReviewList from './master-admin/pages/reviews/ReviewList';
+import Settings from './master-admin/pages/settings/Settings';
+import ProductReviewsList from './master-admin/pages/merchants/ProductReviewsList';
+import ContactsList from './master-admin/pages/contacts/ContactsList';
+import MasterKuralList from './master-admin/pages/kural/KuralList';
+import HealthGoalList from './master-admin/pages/goals/HealthGoalList';
+import SeasonalBanners from './master-admin/pages/banners/SeasonalBanners';
+
+import MenuList from './master-admin/pages/menus/MenuList';
+import MenuCreate from './master-admin/pages/menus/MenuCreate';
+
 function App() {
+  const role = localStorage.getItem("role");
+  const isAdmin = role === "admin";
+
   return (
     <BusinessProvider>
       <Router>
@@ -45,37 +73,69 @@ function App() {
 
           {/* Protected Routes (Wrapped in Layout) */}
           <Route path="/" element={<Layout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="monthly-orders" element={<MonthlyOrders />} />
-            <Route path="business" element={<BusinessList />} />
-            <Route path="business/:id" element={<BusinessDetails />} />
-            <Route path="business/add" element={<BusinessForm />} />
-            <Route path="business/edit/:id" element={<BusinessForm />} />
-            <Route path="transactions" element={<Transactions />} />
-            <Route path="transactions/:id" element={<TransactionDetail />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="website-reviews" element={<WebsiteReviews />} />
-            <Route path="categories/list" element={<ListCategories />} />
-            <Route path="categories/add" element={<AddCategory />} />
-            <Route path="subcategories" element={<Subcategories />} />
-            <Route path="gift-products/list" element={<ListGiftCards />} />
-            <Route path="gift-products/add" element={<AddGiftCard />} />
-            <Route path="giftcard/add" element={<ManageGiftCards />} />
-            <Route path="gift-products/detail/:id" element={<GiftCardDetail />} />
-            <Route path="gift-products/edit/:id" element={<EditGiftCard />} />
-            <Route path="products/add" element={<AddProduct />} />
-            <Route path="products/edit/:id" element={<EditProduct />} />
-            <Route path="products/detail/:id" element={<ProductDetail />} />
-            <Route path="products/list" element={<ListProducts />} />
-            <Route path="products/reviews" element={<Reviews />} />
-            <Route path="users" element={<TradizionsUsers />} />
-            <Route path="contacts" element={<TradizionsContacts />} />
-            <Route path="goals" element={<TradizionsGoals />} />
-            <Route path="banners" element={<TradizionsBanners />} />
-            <Route path="kural" element={<TradizionsKural />} />
-            <Route path="coupons" element={<Coupons />} />
+            {isAdmin ? (
+              <>
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<MasterDashboard />} />
+                <Route path="merchants" element={<MerchantList />} />
+                <Route path="merchants/master" element={<MerchantList type="master" />} />
+                <Route path="merchants/reviews" element={<ProductReviewsList />} />
+                <Route path="merchants/create" element={<MerchantCreate />} />
+                <Route path="merchants/edit/:id" element={<MerchantCreate />} />
+                <Route path="merchants/:id" element={<MerchantDetail />} />
+                <Route path="merchant-stocks/:id" element={<MerchantProducts />} />
+                <Route path="products/:id" element={<MasterProductDetail />} />
+                <Route path="giftcards/:id" element={<MasterGiftCardDetail />} />
+                <Route path="menus" element={<MenuList />} />
+                <Route path="menus/create" element={<MenuCreate />} />
+                <Route path="users" element={<UserList />} />
+                <Route path="categories" element={<MasterCategoryList />} />
+                <Route path="categories/subcategories" element={<MasterSubcategoryList />} />
+                <Route path="orders" element={<OrderList />} />
+                <Route path="orders/:id" element={<OrderDetail />} />
+                <Route path="reports" element={<ReportList />} />
+                <Route path="reviews" element={<ReviewList />} />
+                <Route path="kural" element={<MasterKuralList />} />
+                <Route path="health-goals" element={<HealthGoalList />} />
+                <Route path="banners/seasonal" element={<SeasonalBanners />} />
+                <Route path="contacts" element={<ContactsList />} />
+                <Route path="settings" element={<Settings />} />
+              </>
+            ) : (
+              <>
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="orders" element={<Orders />} />
+                <Route path="monthly-orders" element={<MonthlyOrders />} />
+                <Route path="business" element={<BusinessList />} />
+                <Route path="business/:id" element={<BusinessDetails />} />
+                <Route path="business/add" element={<BusinessForm />} />
+                <Route path="business/edit/:id" element={<BusinessForm />} />
+                <Route path="transactions" element={<Transactions />} />
+                <Route path="transactions/:id" element={<TransactionDetail />} />
+                <Route path="contact" element={<Contact />} />
+                <Route path="website-reviews" element={<WebsiteReviews />} />
+                <Route path="categories/list" element={<ListCategories />} />
+                <Route path="categories/add" element={<AddCategory />} />
+                <Route path="subcategories" element={<Subcategories />} />
+                <Route path="gift-products/list" element={<ListGiftCards />} />
+                <Route path="gift-products/add" element={<AddGiftCard />} />
+                <Route path="giftcard/add" element={<ManageGiftCards />} />
+                <Route path="gift-products/detail/:id" element={<GiftCardDetail />} />
+                <Route path="gift-products/edit/:id" element={<EditGiftCard />} />
+                <Route path="products/add" element={<AddProduct />} />
+                <Route path="products/edit/:id" element={<EditProduct />} />
+                <Route path="products/detail/:id" element={<ProductDetail />} />
+                <Route path="products/list" element={<ListProducts />} />
+                <Route path="products/reviews" element={<Reviews />} />
+                <Route path="users" element={<TradizionsUsers />} />
+                <Route path="contacts" element={<TradizionsContacts />} />
+                <Route path="goals" element={<TradizionsGoals />} />
+                <Route path="banners" element={<TradizionsBanners />} />
+                <Route path="kural" element={<TradizionsKural />} />
+                <Route path="coupons" element={<Coupons />} />
+              </>
+            )}
           </Route>
 
           {/* Fallback */}
