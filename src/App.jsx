@@ -59,6 +59,12 @@ import SeasonalBanners from './master-admin/pages/banners/SeasonalBanners';
 
 import MenuList from './master-admin/pages/menus/MenuList';
 import MenuCreate from './master-admin/pages/menus/MenuCreate';
+import SupplierList from './pages/suppliers/SupplierList';
+import SupplierProducts from './pages/suppliers/SupplierProducts';
+import SalesList from './pages/sales/SalesList';
+import AddSale from './pages/sales/AddSale';
+import SaleDetails from './pages/sales/SaleDetails';
+import ProductIssues from './pages/Reports';
 
 function App() {
   const role = localStorage.getItem("role");
@@ -94,12 +100,18 @@ function App() {
                 <Route path="orders" element={<OrderList />} />
                 <Route path="orders/:id" element={<OrderDetail />} />
                 <Route path="reports" element={<ReportList />} />
+                <Route path="product-issues" element={<ProductIssues />} />
                 <Route path="reviews" element={<ReviewList />} />
                 <Route path="kural" element={<MasterKuralList />} />
                 <Route path="health-goals" element={<HealthGoalList />} />
                 <Route path="banners/seasonal" element={<SeasonalBanners />} />
                 <Route path="contacts" element={<ContactsList />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="suppliers" element={<SupplierList />} />
+                <Route path="suppliers/products/:id" element={<SupplierProducts />} />
+                <Route path="sales" element={<SalesList />} />
+                <Route path="sales/add" element={<AddSale />} />
+                <Route path="sales/detail/:id" element={<SaleDetails />} />
               </>
             ) : (
               <>
@@ -134,6 +146,11 @@ function App() {
                 <Route path="banners" element={<TradizionsBanners />} />
                 <Route path="kural" element={<TradizionsKural />} />
                 <Route path="coupons" element={<Coupons />} />
+                <Route path="suppliers" element={<SupplierList />} />
+                <Route path="suppliers/products/:id" element={<SupplierProducts />} />
+                <Route path="sales" element={<SalesList />} />
+                <Route path="sales/add" element={<AddSale />} />
+                <Route path="sales/detail/:id" element={<SaleDetails />} />
               </>
             )}
           </Route>

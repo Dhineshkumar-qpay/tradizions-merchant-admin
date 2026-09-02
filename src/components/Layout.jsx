@@ -60,6 +60,16 @@ const adminMenuItems = [
   { menuid: "11", menuname: "Contacts", menukey: "contacts", icon: PhoneCall },
   { menuid: "12", menuname: "Settings", menukey: "settings", icon: Settings },
   { menuid: "13", menuname: "Menus", menukey: "menus", icon: List },
+  {
+    menuid: "14",
+    menuname: "Supplier",
+    menukey: "supplier",
+    icon: Store,
+    children: [
+      { menuid: "14-1", menuname: "Suppliers", menukey: "suppliers", icon: Users },
+      { menuid: "14-2", menuname: "Sales", menukey: "sales", icon: ShoppingBag },
+    ],
+  },
 ];
 
 const Layout = () => {
@@ -88,7 +98,23 @@ const Layout = () => {
       try {
         const res = await API.post(APIROUTES.MENUPAGES);
         if (res.data && res.data.statusCode === 200 && res.data.data) {
-          setMenus(res.data.data.assignedmenus || []);
+          const fetchedMenus = res.data.data.assignedmenus || [];
+          
+          const hasSupplier = fetchedMenus.some(m => m.menukey === 'supplier');
+          if (!hasSupplier) {
+            fetchedMenus.push({
+              menuid: "14",
+              menuname: "Supplier",
+              menukey: "supplier",
+              icon: Store,
+              children: [
+                { menuid: "14-1", menuname: "Suppliers", menukey: "suppliers", icon: Users },
+                { menuid: "14-2", menuname: "Sales", menukey: "sales", icon: ShoppingBag },
+              ],
+            });
+          }
+          
+          setMenus(fetchedMenus);
         }
       } catch (err) {
         console.error("Failed to fetch menus", err);

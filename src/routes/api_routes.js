@@ -71,6 +71,21 @@ const APIROUTES = {
   TOGGLECOUPONSTATUS: "/coupon/toggle-status",
   EDITCOUPON: "/coupon/edit",
   DELETECOUPON: "/coupon/delete",
+  
+  // Supplier API routes
+  ADDSUPPLIER: "/supplier/add",
+  GETALLSUPPLIERS: "/supplier/getall",
+  UPDATESUPPLIER: "/supplier/update",
+  DELETESUPPLIER: "/supplier/delete",
+  ADDSUPPLIERPRODUCT: "/supplier/product/add",
+  GETALLSUPPLIERPRODUCTS: "/supplier/product/getall",
+  UPDATESUPPLIERPRODUCT: "/supplier/product/update",
+  DELETESUPPLIERPRODUCT: "/supplier/product/delete",
+
+  // Sales API routes
+  ADDSALE: "/sales",
+  GETALLSALES: "/sales/getall",
+  GETSALEBYID: "/sales/getbyid",
 };
 
 export { APIROUTES };

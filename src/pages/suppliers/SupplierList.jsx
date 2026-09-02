@@ -1,0 +1,366 @@
+import React, { useState, useEffect } from "react";
+import { Plus, Search, Edit2, Trash2, Eye, Box, X } from "lucide-react";
+import { API } from "../../service/api_service";
+import { APIROUTES } from "../../routes/api_routes";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import "../Orders.css";
+
+const SupplierList = () => {
+  const navigate = useNavigate();
+  const [suppliers, setSuppliers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState("add"); // "add", "edit", "view"
+  const [currentSupplier, setCurrentSupplier] = useState({
+    name: "",
+    companyname: "",
+    phone: "",
+    email: "",
+    gst: "",
+    address: "",
+    status: "active",
+  });
+
+  const fetchSuppliers = async () => {
+    try {
+      setLoading(true);
+      const res = await API.post(APIROUTES.GETALLSUPPLIERS, { status: statusFilter });
+      if (res.data && res.data.statusCode === 200) {
+        setSuppliers(res.data.data);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch suppliers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSuppliers();
+  }, [statusFilter]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentSupplier({ ...currentSupplier, [name]: value });
+  };
+
+  const handleOpenModal = (mode, supplier = null) => {
+    setModalMode(mode);
+    if (supplier) {
+      setCurrentSupplier(supplier);
+    } else {
+      setCurrentSupplier({
+        name: "",
+        companyname: "",
+        phone: "",
+        email: "",
+        gst: "",
+        address: "",
+        status: "active",
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const endpoint = modalMode === "edit" ? APIROUTES.UPDATESUPPLIER : APIROUTES.ADDSUPPLIER;
+      const payload = { ...currentSupplier };
+      
+      const res = await API.post(endpoint, payload);
+      if (res.data && res.data.statusCode === 200) {
+        toast.success(`Supplier ${modalMode === "edit" ? "updated" : "added"} successfully`);
+        setIsModalOpen(false);
+        fetchSuppliers();
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this supplier?")) {
+      try {
+        const res = await API.post(APIROUTES.DELETESUPPLIER, { id });
+        if (res.data && res.data.statusCode === 200) {
+          toast.success("Supplier deleted successfully");
+          fetchSuppliers();
+        }
+      } catch (error) {
+        toast.error(error?.response?.data?.message || "Failed to delete supplier");
+      }
+    }
+  };
+
+  const filteredSuppliers = suppliers.filter((supp) => {
+    return (
+      (supp.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (supp.companyname?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (supp.phone || "").includes(searchQuery)
+    );
+  });
+
+  return (
+    <div className="orders-mgmt-container">
+      <div className="page-header">
+        <div className="header-text">
+          <h1>Suppliers</h1>
+          <p>Manage your suppliers and their contact information.</p>
+        </div>
+        <div className="header-actions">
+          <button
+            onClick={() => handleOpenModal("add")}
+            className="btn-primary"
+          >
+            <Plus size={18} /> Add Supplier
+          </button>
+        </div>
+      </div>
+
+      <div className="table-card section-card">
+        <div className="table-filters-row">
+          <div className="search-box">
+            <Search size={18} />
+            <input
+              type="text"
+              placeholder="Search by name, company, or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="filter-options">
+            <div className="filter-item">
+              <label>Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="table-responsive">
+          <table className="orders-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Company Name</th>
+                <th>Contact</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+                    Loading...
+                  </td>
+                </tr>
+              ) : filteredSuppliers.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+                    No suppliers found
+                  </td>
+                </tr>
+              ) : (
+                filteredSuppliers.map((supplier) => (
+                  <tr key={supplier.id} className="order-row">
+                    <td><span className="primary-text">{supplier.name}</span></td>
+                    <td><span className="secondary-text">{supplier.companyname || "-"}</span></td>
+                    <td>
+                      <div className="contact-cell" style={{ display: "flex", flexDirection: "column" }}>
+                        <span>{supplier.phone}</span>
+                        <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>{supplier.email || "-"}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className={`status-badge ${
+                          supplier.status === "active" ? "delivered" : "cancelled"
+                        }`}
+                      >
+                        {supplier.status.charAt(0).toUpperCase() + supplier.status.slice(1)}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-cell">
+                        <button
+                          onClick={() => handleOpenModal("view", supplier)}
+                          className="action-btn view"
+                          title="View Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleOpenModal("edit", supplier)}
+                          className="action-btn edit"
+                          title="Edit"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => navigate(`/suppliers/products/${supplier.id}`, { state: { supplier } })}
+                          className="action-btn view"
+                          title="Manage Products"
+                        >
+                          <Box size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(supplier.id)}
+                          className="action-btn delete"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {isModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="modal-drawer slide-left" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-header">
+              <div className="header-title">
+                <h2>
+                  {modalMode === "add" ? "Add New Supplier" : modalMode === "edit" ? "Edit Supplier" : "Supplier Details"}
+                </h2>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="close-btn"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="drawer-content">
+              <form id="supplier-form" onSubmit={handleSubmit} className="section-form-card" style={{ boxShadow: 'none', border: 'none', padding: '0', background: 'transparent' }}>
+                <div className="form-grid">
+                  <div className="field-group">
+                    <label className="field-label">Name <span>*</span></label>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.name}
+                      onChange={handleInputChange}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label className="field-label">Company Name</label>
+                    <input
+                      type="text"
+                      name="companyname"
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.companyname}
+                      onChange={handleInputChange}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label className="field-label">Phone <span>*</span></label>
+                    <input
+                      type="text"
+                      name="phone"
+                      required
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.phone}
+                      onChange={handleInputChange}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label className="field-label">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.email}
+                      onChange={handleInputChange}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label className="field-label">GST Number</label>
+                    <input
+                      type="text"
+                      name="gst"
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.gst}
+                      onChange={handleInputChange}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label className="field-label">Status</label>
+                    <select
+                      name="status"
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.status}
+                      onChange={handleInputChange}
+                      className="form-select"
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                  <div className="field-group full">
+                    <label className="field-label">Address</label>
+                    <textarea
+                      name="address"
+                      rows="3"
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.address}
+                      onChange={handleInputChange}
+                      className="form-textarea"
+                    ></textarea>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div className="drawer-footer" style={{ padding: '20px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="btn-secondary"
+              >
+                {modalMode === "view" ? "Close" : "Cancel"}
+              </button>
+              {modalMode !== "view" && (
+                <button
+                  type="submit"
+                  form="supplier-form"
+                  className="btn-primary"
+                >
+                  {modalMode === "add" ? "Save Supplier" : "Update Supplier"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SupplierList;
