@@ -64,16 +64,11 @@ const SupplierDetails = () => {
 
   if (error || !supplier) {
     return (
-      <div className="dashboard-wrapper" style={{ justifyContent: 'center' }}>
-        <div className="panel" style={{ textAlign: 'center', alignItems: 'center' }}>
-          <h2 style={{ color: '#ef4444', margin: '0 0 10px', fontSize: '28px', fontWeight: '800' }}>Oops!</h2>
-          <p style={{ color: '#64748b', margin: 0, fontSize: '16px', fontWeight: '500' }}>{error || "Supplier not found."}</p>
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={{ marginTop: '24px', padding: '12px 24px', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', fontFamily: 'inherit' }}
-          >
-            Return to Dashboard
-          </button>
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'linear-gradient(135deg, #f0f9ff 0%, #fdf4ff 50%, #f0fdf4 100%)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '550px' }}>
+          <img src="/404.jpg" alt="404 Not Found" style={{ width: '100%', maxWidth: '400px', height: 'auto', marginBottom: '30px' }} />
+          <h2 style={{ color: '#0f172a', margin: '10px 0 15px', fontSize: '36px', fontWeight: '800' }}>Supplier Not Found</h2>
+          <p style={{ color: '#64748b', margin: 0, fontSize: '18px', fontWeight: '500', lineHeight: '1.6' }}>{error || "The supplier profile you're looking for doesn't exist or has been removed."}</p>
         </div>
       </div>
     );
@@ -103,7 +98,7 @@ const SupplierDetails = () => {
             </div>
             <div className="banner-meta">
               <span>Date On</span>
-              <span style={{ color: '#ffffff', fontWeight: '700', fontSize: '14px' }}>
+              <span style={{ color: '#0f172a', fontWeight: '700', fontSize: '14px' }}>
                 {new Date(supplier.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
               </span>
             </div>

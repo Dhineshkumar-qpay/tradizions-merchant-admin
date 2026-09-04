@@ -13,6 +13,9 @@ const SupplierList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState("add"); // "add", "edit", "view"
   const [currentSupplier, setCurrentSupplier] = useState({
@@ -142,6 +145,17 @@ const SupplierList = () => {
     );
   });
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredSuppliers.length / rowsPerPage);
+  const indexOfLastItem = currentPage * rowsPerPage;
+  const indexOfFirstItem = indexOfLastItem - rowsPerPage;
+  const currentSuppliers = filteredSuppliers.slice(indexOfFirstItem, indexOfLastItem);
+
   return (
     <div className="orders-mgmt-container">
       <div className="page-header">
@@ -205,16 +219,16 @@ const SupplierList = () => {
                     Loading...
                   </td>
                 </tr>
-              ) : filteredSuppliers.length === 0 ? (
+              ) : currentSuppliers.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
                     No suppliers found
                   </td>
                 </tr>
               ) : (
-                filteredSuppliers.map((supplier, index) => (
+                currentSuppliers.map((supplier, index) => (
                   <tr key={supplier.id} className="order-row">
-                    <td className="secondary-text" style={{ fontWeight: '500' }}>{index + 1}</td>
+                    <td className="secondary-text" style={{ fontWeight: '500' }}>{indexOfFirstItem + index + 1}</td>
                     <td><span className="primary-text">{supplier.name}</span></td>
                     <td><span className="secondary-text">{supplier.companyname || "-"}</span></td>
                     <td>
@@ -283,6 +297,77 @@ const SupplierList = () => {
               )}
             </tbody>
           </table>
+        </div>
+        
+        {/* Pagination Controls */}
+        <div
+          className="pagination-footer"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "12px 16px",
+            borderTop: "1px solid var(--border-color)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <p style={{ margin: 0, fontSize: "14px", color: "var(--text-muted)" }}>
+              Showing{" "}
+              <strong>
+                {Math.min(
+                  (currentPage - 1) * rowsPerPage + 1,
+                  filteredSuppliers.length || 1
+                )}
+              </strong>{" "}
+              to{" "}
+              <strong>
+                {Math.min(currentPage * rowsPerPage, filteredSuppliers.length)}
+              </strong>{" "}
+              of <strong>{filteredSuppliers.length}</strong> Results
+            </p>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              style={{
+                padding: "4px 8px",
+                borderRadius: "4px",
+                border: "1px solid var(--border-color)",
+                outline: "none",
+                cursor: "pointer",
+                background: "#fff"
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={30}>30</option>
+              <option value={40}>40</option>
+              <option value={50}>50</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="pagination-btn"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() =>
+                setCurrentPage((prev) =>
+                  Math.min(prev + 1, Math.ceil(filteredSuppliers.length / rowsPerPage))
+                )
+              }
+              disabled={currentPage === Math.ceil(filteredSuppliers.length / rowsPerPage) || filteredSuppliers.length === 0}
+              className="pagination-btn"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 

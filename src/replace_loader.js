@@ -15,7 +15,7 @@ function processDir(dir) {
       if (content.includes('<div className="circular-loader"></div>')) {
         // Replace loader
         content = content.replace(/<div className="circular-loader"><\/div>/g, replaceStr);
-        
+
         // Add Loader2 to lucide-react import
         const lucideRegex = /import\s+{([^}]*)}\s+from\s+['"]lucide-react['"]/;
         if (lucideRegex.test(content)) {
@@ -29,7 +29,7 @@ function processDir(dir) {
           // Add import if missing
           content = `import { Loader2 } from 'lucide-react';\n` + content;
         }
-        
+
         fs.writeFileSync(fullPath, content, 'utf8');
         console.log(`Updated ${fullPath}`);
       }
