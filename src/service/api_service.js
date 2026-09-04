@@ -11,7 +11,7 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     console.log(`------------------------${config.data}`);
-    
+
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");
 

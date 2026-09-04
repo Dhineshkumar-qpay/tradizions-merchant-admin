@@ -126,6 +126,7 @@ const SaleDetails = () => {
               <table className="orders-table">
                 <thead>
                   <tr>
+                    <th>S.No</th>
                     <th>Product</th>
                     <th>Quantity</th>
                     <th>Price</th>
@@ -133,8 +134,9 @@ const SaleDetails = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {supplierGroups[supplierName].map((item) => (
+                  {supplierGroups[supplierName].map((item, index) => (
                     <tr key={item.id} className="order-row">
+                      <td className="secondary-text" style={{ fontWeight: '500' }}>{index + 1}</td>
                       <td><span className="primary-text">{item.SupplierProductModel?.productname || item.productname}</span></td>
                       <td><span className="secondary-text">{item.quantity} {item.unit}</span></td>
                       <td><span className="secondary-text">₹{item.unit === 'grams' ? (parseFloat(item.price) * 1000).toFixed(2) : parseFloat(item.price).toFixed(2)}</span></td>

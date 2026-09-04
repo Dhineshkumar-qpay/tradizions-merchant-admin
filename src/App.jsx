@@ -61,9 +61,11 @@ import MenuList from './master-admin/pages/menus/MenuList';
 import MenuCreate from './master-admin/pages/menus/MenuCreate';
 import SupplierList from './pages/suppliers/SupplierList';
 import SupplierProducts from './pages/suppliers/SupplierProducts';
+import SupplierDetails from './pages/suppliers/SupplierDetails';
 import SalesList from './pages/sales/SalesList';
 import AddSale from './pages/sales/AddSale';
 import SaleDetails from './pages/sales/SaleDetails';
+import SaleInvoice from './pages/sales/SaleInvoice';
 import ProductIssues from './pages/Reports';
 
 function App() {
@@ -76,6 +78,10 @@ function App() {
         <Routes>
           {/* Public Route */}
           <Route path="/login" element={<Login />} />
+          
+          {/* Invoice/Public Routes (Needs Token but placed outside admin layout for clean view) */}
+          <Route path="/sales/invoice/:id" element={<SaleInvoice />} />
+          <Route path="/suppliers/details/:id" element={<SupplierDetails />} />
 
           {/* Protected Routes (Wrapped in Layout) */}
           <Route path="/" element={<Layout />}>

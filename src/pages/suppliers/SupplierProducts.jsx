@@ -11,7 +11,7 @@ const SupplierProducts = () => {
   const { id: supplierid } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const supplier = location.state?.supplier || { name: "Supplier" };
+  const [supplier, setSupplier] = useState(location.state?.supplier || null);
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,8 +41,25 @@ const SupplierProducts = () => {
     }
   };
 
+  const fetchSupplierDetails = async () => {
+    try {
+      const res = await API.post(APIROUTES.GETALLSUPPLIERS, { status: "all" });
+      if (res.data && res.data.statusCode === 200) {
+        const found = res.data.data.find(s => s.id.toString() === supplierid.toString());
+        if (found) {
+          setSupplier(found);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    if (!supplier) {
+      fetchSupplierDetails();
+    }
   }, [supplierid]);
 
   const handleInputChange = (e) => {
@@ -139,10 +156,47 @@ const SupplierProducts = () => {
           </button>
           <div>
             <h1>Supplier Products</h1>
-            <p>Managing products for {supplier.name}</p>
+            <p>Managing products for {supplier?.name || "Supplier"}</p>
           </div>
         </div>
       </div>
+
+      {/* Supplier Profile Detail Card */}
+      {supplier && (
+        <div className="section-form-card" style={{ marginBottom: '24px', backgroundColor: '#f8fafc' }}>
+          <div className="section-title">
+            <h2 style={{ fontSize: '18px' }}>{supplier.name} - Details</h2>
+            <span
+              className={`status-badge ${supplier.status === "active" ? "delivered" : "cancelled"}`}
+              style={{ marginLeft: 'auto' }}
+            >
+              {supplier.status?.toUpperCase()}
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Company Name</span>
+              <span style={{ fontWeight: '500' }}>{supplier.companyname || "-"}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Phone</span>
+              <span style={{ fontWeight: '500' }}>{supplier.phone || "-"}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Email</span>
+              <span style={{ fontWeight: '500' }}>{supplier.email || "-"}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>GST Number</span>
+              <span style={{ fontWeight: '500' }}>{supplier.gst || "-"}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gridColumn: '1 / -1' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Address</span>
+              <span style={{ fontWeight: '500' }}>{supplier.address || "-"}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add / Edit Form */}
       <section className="section-form-card" style={{ marginBottom: '24px' }}>
@@ -263,6 +317,7 @@ const SupplierProducts = () => {
           <table className="orders-table">
             <thead>
               <tr>
+                <th>S.No</th>
                 <th>Product Name</th>
                 <th>Total Weight</th>
                 <th>Remaining Weight</th>
@@ -275,19 +330,20 @@ const SupplierProducts = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+                  <td colSpan="8" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
                     Loading products...
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
+                  <td colSpan="8" style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
                     No products added yet. Use the form above to add one.
                   </td>
                 </tr>
               ) : (
-                products.map((product) => (
+                products.map((product, index) => (
                   <tr key={product.id} className="order-row">
+                    <td className="secondary-text" style={{ fontWeight: '500' }}>{index + 1}</td>
                     <td><span className="primary-text">{product.productname}</span></td>
                     <td><span className="secondary-text">{product.totalweight} {product.unit}</span></td>
                     <td>
