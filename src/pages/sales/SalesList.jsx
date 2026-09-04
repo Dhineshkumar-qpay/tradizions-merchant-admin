@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Plus, Search, Eye, Share2, Printer, Download } from "lucide-react";
 import { API } from "../../service/api_service";
 import { APIROUTES } from "../../routes/api_routes";
-import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "../Orders.css";
 
@@ -64,7 +63,7 @@ const SalesList = () => {
         console.error("Error sharing:", error);
       }
     } else {
-      toast.error("Sharing is not supported on this browser.");
+      console.warn("Sharing is not supported on this browser.");
     }
   };
 

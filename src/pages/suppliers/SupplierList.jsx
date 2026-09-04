@@ -60,7 +60,7 @@ const SupplierList = () => {
         console.error("Error sharing:", error);
       }
     } else {
-      toast.error("Sharing is not supported on this browser.");
+      console.warn("Sharing is not supported on this browser.");
     }
   };
 

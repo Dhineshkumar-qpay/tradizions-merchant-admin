@@ -188,14 +188,17 @@
 /* Panels */
 .panel {
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 20px;
   padding: 32px;
-  box-shadow:
-    0 10px 40px rgba(0, 0, 0, 0.04),
-    0 2px 10px rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
   display: flex;
   flex-direction: column;
+  transition: box-shadow 0.3s ease;
+}
+
+.panel:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .panel-header {
@@ -226,6 +229,13 @@
   gap: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
   border: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.info-item:hover {
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.04);
 }
 
 .info-icon {
@@ -268,6 +278,13 @@
   flex-direction: column;
   gap: 20px;
   border: 1px solid #f1f5f9;
+  transition: all 0.3s ease;
+}
+
+.prod-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+  border-color: #e2e8f0;
 }
 
 .prod-title-row {

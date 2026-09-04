@@ -46,11 +46,11 @@ const SaleInvoice = () => {
 
   if (error || !sale) {
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'linear-gradient(135deg, #f0f9ff 0%, #fdf4ff 50%, #f0fdf4 100%)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
-        <div style={{ textAlign: 'center', maxWidth: '550px' }}>
-          <img src="/404.jpg" alt="404 Not Found" style={{ width: '100%', maxWidth: '400px', height: 'auto', marginBottom: '30px' }} />
-          <h2 style={{ color: '#0f172a', margin: '10px 0 15px', fontSize: '36px', fontWeight: '800' }}>Invoice Not Found</h2>
-          <p style={{ color: '#64748b', margin: 0, fontSize: '18px', fontWeight: '500', lineHeight: '1.6' }}>{error || "The sales invoice you're looking for doesn't exist or has been removed."}</p>
+      <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: '#f8fafc', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+        <div style={{ background: '#ffffff', padding: '50px 40px', borderRadius: '24px', boxShadow: '0 10px 40px rgba(0, 0, 0, 0.04), 0 2px 10px rgba(0, 0, 0, 0.02)', border: '1px solid rgba(0,0,0,0.03)', textAlign: 'center', maxWidth: '500px', width: '100%' }}>
+          <img src="/404.jpg" alt="404 Not Found" style={{ width: '100%', maxWidth: '280px', height: 'auto', marginBottom: '32px', borderRadius: '12px' }} />
+          <h2 style={{ color: '#0f172a', margin: '0 0 12px', fontSize: '26px', fontWeight: '700', letterSpacing: '-0.3px' }}>Invoice Not Found</h2>
+          <p style={{ color: '#64748b', margin: 0, fontSize: '15px', fontWeight: '500', lineHeight: '1.6' }}>{error || "The sales invoice you're looking for doesn't exist or has been removed."}</p>
         </div>
       </div>
     );
@@ -73,24 +73,26 @@ const SaleInvoice = () => {
         <div className="top-banner">
           <div className="banner-left">
             <div className="banner-icon-box">
-              <FileText size={40} />
+              <FileText size={24} />
             </div>
             <div className="banner-titles">
+              <span className="banner-label">INVOICE</span>
               <h1>{sale.orderid || "N/A"}</h1>
               <p>Tradizions Sales</p>
             </div>
           </div>
           <div className="banner-right">
             <div className="banner-meta">
-              <span>Status</span>
+              <span className="meta-label">STATUS</span>
               <div className={`status-pill ${sale.status}`}>
                 {getStatusIcon(sale.status)}
                 {sale.status ? sale.status.charAt(0).toUpperCase() + sale.status.slice(1) : "Pending"}
               </div>
             </div>
+            <div className="meta-divider"></div>
             <div className="banner-meta">
-              <span>Date On</span>
-              <span style={{ color: '#0f172a', fontWeight: '700', fontSize: '14px' }}>
+              <span className="meta-label">DATE ON</span>
+              <span className="date-value">
                 {new Date(sale.saledate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
               </span>
             </div>
