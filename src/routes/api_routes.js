@@ -95,5 +95,5 @@ const APIROUTES = {
 
 export { APIROUTES };
 
-// export const IMAGE_URL = "https://demo.sevanta.in/api";
-export const IMAGE_URL = "http://localhost:3003";
+export const IMAGE_URL = "https://demo.sevanta.in/api";
+// export const IMAGE_URL = "http://localhost:3003";
