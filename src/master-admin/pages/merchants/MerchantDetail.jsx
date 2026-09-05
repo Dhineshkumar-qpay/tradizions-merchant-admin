@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../../utils/formatters";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -296,10 +297,10 @@ const MerchantDetail = () => {
                       <td style={{ fontWeight: "800", color: "var(--text-main)" }}>
                         {product.discount > 0 && (
                           <span style={{ fontSize: "11px", textDecoration: "line-through", color: "var(--text-muted)", marginRight: "8px" }}>
-                            ₹{product.price}
+                            ₹{formatIndianAmount(product.price)}
                           </span>
                         )}
-                        ₹{product.sellingprice || product.price}
+                        ₹{formatIndianAmount(product.sellingprice || product.price)}
                       </td>
                       <td>
                         <span style={{ fontSize: "14px", fontWeight: "800", color: product.availablestock > 10 ? "#059669" : product.availablestock > 0 ? "#D97706" : "#E11D48" }}>
@@ -373,10 +374,10 @@ const MerchantDetail = () => {
                       <td style={{ fontWeight: "800", color: "var(--text-main)" }}>
                         {gc.giftprice > gc.giftsellingprice && (
                           <span style={{ fontSize: "11px", textDecoration: "line-through", color: "var(--text-muted)", marginRight: "8px" }}>
-                            ₹{gc.giftprice}
+                            ₹{formatIndianAmount(gc.giftprice)}
                           </span>
                         )}
-                        ₹{gc.giftsellingprice || gc.giftprice}
+                        ₹{formatIndianAmount(gc.giftsellingprice || gc.giftprice)}
                       </td>
                       <td>
                         <span style={{ fontSize: "14px", fontWeight: "800", color: gc.stock > 10 ? "#059669" : gc.stock > 0 ? "#D97706" : "#E11D48" }}>

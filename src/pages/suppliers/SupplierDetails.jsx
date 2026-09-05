@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../utils/formatters";
 import { useParams, useNavigate } from "react-router-dom";
 import { API } from "../../service/api_service";
-import { APIROUTES } from "../../routes/api_routes";
+import { APIROUTES, IMAGE_URL } from "../../routes/api_routes";
 import { Store, Box, Mail, Phone, MapPin, Hash, Map, User, Check, Clock, X, PackageOpen, PieChart } from "lucide-react";
 import "../sales/SaleInvoice.css";
 
@@ -18,18 +19,14 @@ const SupplierDetails = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
-        const suppRes = await API.post(APIROUTES.GETALLSUPPLIERS, { status: "all" });
-        let currentSupplier = null;
-        if (suppRes.data && suppRes.data.statusCode === 200) {
-          currentSupplier = suppRes.data.data.find(s => s.id.toString() === id.toString());
-          if (currentSupplier) {
-            setSupplier(currentSupplier);
-          } else {
-            setError("Supplier not found.");
-            setLoading(false);
-            return;
-          }
+        const suppRes = await API.post(APIROUTES.GETSUPPLIERBYID, { id });
+        const currentSupplier = suppRes.data?.statusCode === 200 ? suppRes.data.data : null;
+        if (currentSupplier) {
+          setSupplier(currentSupplier);
+        } else {
+          setError("Supplier not found.");
+          setLoading(false);
+          return;
         }
 
         const prodRes = await API.post(APIROUTES.GETALLSUPPLIERPRODUCTS, { supplierid: id });
@@ -81,7 +78,7 @@ const SupplierDetails = () => {
         <div className="top-banner">
           <div className="banner-left">
             <div className="banner-icon-box">
-              <Store size={24} />
+              {supplier.logo ? <img src={IMAGE_URL + supplier.logo} alt="Supplier logo" style={{ width: 34, height: 34, objectFit: 'contain' }} /> : <Store size={24} />}
             </div>
             <div className="banner-titles">
               <span className="banner-label">SUPPLIER</span>
@@ -120,6 +117,20 @@ const SupplierDetails = () => {
                 <div className="info-text">
                   <span className="info-label">Phone Number</span>
                   <span className="info-value">{supplier.phone || "-"}</span>
+                </div>
+              </div>
+              <div className="info-item">
+                <Store className="info-icon" size={20} />
+                <div className="info-text">
+                  <span className="info-label">Brand Name</span>
+                  <span className="info-value">{supplier.brandname || "-"}</span>
+                </div>
+              </div>
+              <div className="info-item">
+                <MapPin className="info-icon" size={20} />
+                <div className="info-text">
+                  <span className="info-label">Location</span>
+                  <span className="info-value">{supplier.location || "-"}</span>
                 </div>
               </div>
               <div className="info-item">
@@ -176,11 +187,11 @@ const SupplierDetails = () => {
                     <div className="prod-footer">
                       <div className="prod-stat">
                         <span className="stat-label">Price Per {product.unit.toUpperCase()}</span>
-                        <span className="stat-value">₹{product.perproductkgprice !== undefined ? parseFloat(product.perproductkgprice).toFixed(2) : "-"}</span>
+                        <span className="stat-value">₹{product.perproductkgprice !== undefined ? formatIndianAmount(parseFloat(product.perproductkgprice), 2) : "-"}</span>
                       </div>
                       <div className="prod-stat right">
                         <span className="stat-label">Est. Total</span>
-                        <span className="stat-value">₹{parseFloat(product.totalprice).toFixed(2)}</span>
+                        <span className="stat-value">₹{formatIndianAmount(parseFloat(product.totalprice), 2)}</span>
                       </div>
                     </div>
                   </div>

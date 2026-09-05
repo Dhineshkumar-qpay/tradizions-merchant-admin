@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import {
   Search,
   Filter,
@@ -372,7 +373,7 @@ const MonthlyOrders = () => {
                       </span>
                     </td>
                     <td>
-                      <span className="amount">₹{order.totalamount}</span>
+                      <span className="amount">₹{formatIndianAmount(order.totalamount)}</span>
                     </td>
                     <td>
                       <span
@@ -704,7 +705,7 @@ const MonthlyOrders = () => {
                                   </span>
                                 </div>
                                 <div className="p-price">
-                                  ₹{item.totalprice}
+                                  ₹{formatIndianAmount(item.totalprice)}
                                 </div>
                               </div>
                             ))}
@@ -719,7 +720,7 @@ const MonthlyOrders = () => {
                         <div className="summary-list">
                           <div className="row grand-total">
                             <span>Total Amount</span>
-                            <span>₹{orderDetails.order.totalamount}</span>
+                            <span>₹{formatIndianAmount(orderDetails.order.totalamount)}</span>
                           </div>
                         </div>
                       </div>

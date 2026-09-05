@@ -46,5 +46,5 @@ export const APIROUTES = {
   UPDATEBANNER: "/banner/update-banner",
 };
 
-export const IMAGE_URL = "https://demo.sevanta.in/api";
-// export const IMAGE_URL = "http://localhost:3003";
+// export const IMAGE_URL = "https://demo.sevanta.in/api";
+export const IMAGE_URL = "http://localhost:3003";

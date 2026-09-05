@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../../utils/formatters";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -217,7 +218,7 @@ const OrderDetail = () => {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "24px" }}>
           <div>
             <p style={{ fontSize: "11px", fontWeight: "800", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Total Amount</p>
-            <p style={{ fontSize: "24px", fontWeight: "900", color: "var(--primary)" }}>₹{globalTotal?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+            <p style={{ fontSize: "24px", fontWeight: "900", color: "var(--primary)" }}>₹{formatIndianAmount(globalTotal, 2)}</p>
           </div>
           <div>
             <p style={{ fontSize: "11px", fontWeight: "800", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Payment Method</p>
@@ -276,8 +277,8 @@ const OrderDetail = () => {
                           {item.product?.productname || item.giftpack?.giftpackname || item.giftcard?.title || 'Unknown Item'}
                         </p>
                         <p style={{ fontSize: "13px", fontWeight: "600", color: "var(--text-muted)" }}>Qty: {item.quantity}</p>
-                        <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-main)" }}>₹{item.price?.toLocaleString(undefined, { minimumFractionDigits: 2 })} / each</p>
-                        <p style={{ fontSize: "14px", fontWeight: "900", color: "var(--primary)", marginTop: "4px" }}>Total: ₹{item.totalprice?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                        <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-main)" }}>₹{formatIndianAmount(item.price, 2)} / each</p>
+                        <p style={{ fontSize: "14px", fontWeight: "900", color: "var(--primary)", marginTop: "4px" }}>Total: ₹{formatIndianAmount(item.totalprice, 2)}</p>
 
                         {item.giftmessage && (
                           <div style={{ marginTop: "12px", padding: "12px", background: "#fefce8", border: "1px solid #fef08a", borderRadius: "8px" }}>
@@ -297,7 +298,7 @@ const OrderDetail = () => {
                                   <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-main)" }}>{item.giftpack.giftpackname} (Box)</p>
                                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: "2px" }}>
                                     <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)" }}>Qty: 1</span>
-                                    <span style={{ fontSize: "11px", fontWeight: "800", color: "var(--primary)" }}>₹{item.giftpack.giftpackprice?.toLocaleString()}</span>
+                                    <span style={{ fontSize: "11px", fontWeight: "800", color: "var(--primary)" }}>₹{formatIndianAmount(item.giftpack.giftpackprice)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -310,7 +311,7 @@ const OrderDetail = () => {
                                   <p style={{ fontSize: "13px", fontWeight: "700", color: "var(--text-main)" }}>{gp.productname}</p>
                                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: "2px" }}>
                                     <span style={{ fontSize: "11px", fontWeight: "600", color: "var(--text-muted)" }}>Qty: {gp.quantity}</span>
-                                    <span style={{ fontSize: "11px", fontWeight: "800", color: "var(--primary)" }}>₹{gp.totalprice?.toLocaleString()}</span>
+                                    <span style={{ fontSize: "11px", fontWeight: "800", color: "var(--primary)" }}>₹{formatIndianAmount(gp.totalprice)}</span>
                                   </div>
                                 </div>
                               </div>

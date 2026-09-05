@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     define: {
+      "import.meta.env.VITE_API_URL": JSON.stringify(
+        env.NEXT_PUBLIC_API_URL || "https://demo.sevanta.in/api",
+      ),
       "process.env.NEXT_PUBLIC_API_URL": JSON.stringify(
         env.NEXT_PUBLIC_API_URL || "https://demo.sevanta.in/api",
       ),

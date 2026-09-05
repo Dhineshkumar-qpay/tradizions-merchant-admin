@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../utils/formatters";
 import { ArrowLeft, ShoppingBag, User, Calendar, CreditCard, Store } from "lucide-react";
 import { API } from "../../service/api_service";
 import { APIROUTES } from "../../routes/api_routes";
@@ -110,7 +111,7 @@ const SaleDetails = () => {
 
           <div className="detail-item" style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <span className="label" style={{ color: 'var(--text-muted)', fontSize: '13px' }}><CreditCard size={14} style={{ display: 'inline', marginRight: '4px' }} /> Grand Total</span>
-            <span className="val" style={{ fontWeight: '600', fontSize: '18px', color: 'var(--primary)' }}>₹{parseFloat(sale.totalamount).toFixed(2)}</span>
+            <span className="val" style={{ fontWeight: '600', fontSize: '18px', color: 'var(--primary)' }}>₹{formatIndianAmount(parseFloat(sale.totalamount), 2)}</span>
           </div>
         </div>
       </div>
@@ -139,8 +140,8 @@ const SaleDetails = () => {
                       <td className="secondary-text" style={{ fontWeight: '500' }}>{index + 1}</td>
                       <td><span className="primary-text">{item.SupplierProductModel?.productname || item.productname}</span></td>
                       <td><span className="secondary-text">{item.quantity} {item.unit}</span></td>
-                      <td><span className="secondary-text">₹{item.unit === 'grams' ? (parseFloat(item.price) * 1000).toFixed(2) : parseFloat(item.price).toFixed(2)}</span></td>
-                      <td><span className="amount">₹{parseFloat(item.totalprice).toFixed(2)}</span></td>
+                      <td><span className="secondary-text">₹{formatIndianAmount(item.unit === 'grams' ? parseFloat(item.price) * 1000 : parseFloat(item.price), 2)}</span></td>
+                      <td><span className="amount">₹{formatIndianAmount(parseFloat(item.totalprice), 2)}</span></td>
                     </tr>
                   ))}
                 </tbody>
@@ -159,7 +160,7 @@ const SaleDetails = () => {
           <div style={{ textAlign: 'right' }}>
             <span style={{ fontSize: '16px', color: 'var(--text-muted)' }}>Grand Total</span>
             <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--primary)' }}>
-              ₹{parseFloat(sale.totalamount).toFixed(2)}
+              ₹{formatIndianAmount(parseFloat(sale.totalamount), 2)}
             </div>
           </div>
         </div>

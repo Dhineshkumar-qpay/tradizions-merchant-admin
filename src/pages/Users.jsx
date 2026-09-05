@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import {
   Search,
   Filter,
@@ -410,7 +411,7 @@ const Users = () => {
                       <div className="stat">
                         <label>Total Purchase</label>
                         <span className="hl">
-                          ₹{showDetailDrawer.totalPurchase}
+                          ₹{formatIndianAmount(showDetailDrawer.totalPurchase)}
                         </span>
                       </div>
                     </div>

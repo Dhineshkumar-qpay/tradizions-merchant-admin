@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../../utils/formatters";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -229,12 +230,12 @@ const GiftCardDetail = () => {
                 </span>
                 <div className="flex items-baseline gap-3">
                   <span className="text-2xl font-black text-primary">
-                    ₹{g.giftsellingprice > 0 ? g.giftsellingprice : g.giftprice}
+                    ₹{formatIndianAmount(g.giftsellingprice > 0 ? g.giftsellingprice : g.giftprice)}
                   </span>
                   {g.giftsellingprice > 0 &&
                     g.giftsellingprice < g.giftprice && (
                       <span className="text-sm font-semibold text-gray-400 line-through">
-                        ₹{g.giftprice}
+                        ₹{formatIndianAmount(g.giftprice)}
                       </span>
                     )}
                 </div>

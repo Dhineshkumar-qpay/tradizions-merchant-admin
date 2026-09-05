@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Loader2, ArrowLeft,
   Edit,
@@ -501,7 +502,7 @@ const ProductDetail = () => {
                     fontSize: product.sellingprice > 0 ? "14px" : "16px",
                   }}
                 >
-                  ₹{product.price}
+                  ₹{formatIndianAmount(product.price)}
                 </span>
               </div>
               {product.sellingprice > 0 && (
@@ -521,7 +522,7 @@ const ProductDetail = () => {
                       fontSize: "16px",
                     }}
                   >
-                    ₹{product.sellingprice}
+                    ₹{formatIndianAmount(product.sellingprice)}
                   </span>
                 </div>
               )}

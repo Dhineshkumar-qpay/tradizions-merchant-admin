@@ -1,4 +1,5 @@
 import React from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import {
     ChevronLeft,
     Calendar,
@@ -95,7 +96,7 @@ const TransactionDetail = () => {
                         <div className="card-body">
                             <div className="amount-display">
                                 <span className="currency">₹</span>
-                                <span className="value">{txn.amount.toLocaleString()}</span>
+                                <span className="value">{formatIndianAmount(txn.amount)}</span>
                             </div>
                             <div className="txn-meta-list">
                                 <div className="meta-item">
@@ -139,22 +140,22 @@ const TransactionDetail = () => {
                                             <span className="name">{item.name}</span>
                                             <span className="qty">× {item.qty}</span>
                                         </div>
-                                        <span className="price">₹{(item.price * item.qty).toLocaleString()}</span>
+                                        <span className="price">₹{formatIndianAmount(item.price * item.qty)}</span>
                                     </div>
                                 ))}
                             </div>
                             <div className="price-summary">
                                 <div className="summary-row">
                                     <span>Subtotal</span>
-                                    <span>₹{txn.subtotal}</span>
+                                    <span>₹{formatIndianAmount(txn.subtotal)}</span>
                                 </div>
                                 <div className="summary-row">
                                     <span>Delivery Fee</span>
-                                    <span>₹{txn.deliveryFee}</span>
+                                    <span>₹{formatIndianAmount(txn.deliveryFee)}</span>
                                 </div>
                                 <div className="summary-row total">
                                     <span>Total Amount Paid</span>
-                                    <span>₹{txn.amount}</span>
+                                    <span>₹{formatIndianAmount(txn.amount)}</span>
                                 </div>
                             </div>
                         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../../utils/formatters";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -108,7 +109,7 @@ const Dashboard = () => {
     },
     {
       title: "Total Revenue",
-      value: `₹${(dashboardCount?.totalrevenue || 0).toLocaleString()}`,
+      value: `₹${formatIndianAmount(dashboardCount?.totalrevenue || 0)}`,
       icon: <DollarSign />,
       trend: "+24%",
       isPositive: true,

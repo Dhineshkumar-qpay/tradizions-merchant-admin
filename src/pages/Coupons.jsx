@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatIndianAmount } from '../utils/formatters';
 import { toast } from 'react-toastify';
 import { ChevronRight, Save, Loader2, Ticket, Edit2, Trash2, X, CheckCircle2 } from 'lucide-react';
 import { APIROUTES } from '../routes/api_routes';
@@ -246,7 +247,7 @@ const Coupons = () => {
                         <span style={{ textTransform: 'capitalize' }}>{coupon.discount_type}</span>
                       </td>
                       <td>
-                        <span className="hl">{coupon.discount_type === 'fixed' ? `₹${coupon.discount_value}` : `${coupon.discount_value}%`}</span>
+                        <span className="hl">{coupon.discount_type === 'fixed' ? `₹${formatIndianAmount(coupon.discount_value)}` : `${coupon.discount_value}%`}</span>
                       </td>
                       <td>
                         <span className={`status-badge ${coupon.is_active ? 'active' : 'inactive'}`}>

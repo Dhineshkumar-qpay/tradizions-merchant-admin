@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Loader2, ArrowLeft,
   Edit,
@@ -221,7 +222,7 @@ const GiftCardDetail = () => {
                   >
                     {gift.giftsellingprice > 0 ? (
                       <>
-                        ₹{gift.giftsellingprice}{" "}
+                        ₹{formatIndianAmount(gift.giftsellingprice)}{" "}
                         <span
                           style={{
                             textDecoration: "line-through",
@@ -231,11 +232,11 @@ const GiftCardDetail = () => {
                             marginLeft: "5px",
                           }}
                         >
-                          ₹{gift.giftprice}
+                          ₹{formatIndianAmount(gift.giftprice)}
                         </span>
                       </>
                     ) : (
-                      <>₹{gift.giftprice}</>
+                      <>₹{formatIndianAmount(gift.giftprice)}</>
                     )}
                   </p>
                 </div>

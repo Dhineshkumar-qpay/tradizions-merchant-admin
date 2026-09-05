@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import { Loader2, Plus,
   Search,
   Edit,
@@ -262,11 +263,11 @@ const ListGiftCards = () => {
                         <div className="price-main">
                           {card.giftsellingprice > 0 ? (
                             <>
-                              <span className="offer">₹{card.giftsellingprice}</span>
-                              <span className="original" style={{ textDecoration: "line-through" }}>₹{card.giftprice}</span>
+                              <span className="offer">₹{formatIndianAmount(card.giftsellingprice)}</span>
+                              <span className="original" style={{ textDecoration: "line-through" }}>₹{formatIndianAmount(card.giftprice)}</span>
                             </>
                           ) : (
-                            <span className="offer">₹{card.giftprice}</span>
+                            <span className="offer">₹{formatIndianAmount(card.giftprice)}</span>
                           )}
                         </div>
                         {card.giftsellingprice > 0 && card.giftprice > card.giftsellingprice && (

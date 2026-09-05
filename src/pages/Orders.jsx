@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import {
   Search,
   Filter,
@@ -21,12 +22,15 @@ import {
   CreditCard,
   Download,
   Loader2,
+  Plus,
 } from "lucide-react";
 import "./Orders.css";
 import { API } from "../service/api_service";
 import { APIROUTES } from "../routes/api_routes";
+import { useNavigate } from "react-router-dom";
 
 const Orders = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [businesses, setBusinesses] = useState([]);
   const [selectedBusinessId, setSelectedBusinessId] = useState("");
@@ -126,16 +130,16 @@ const Orders = () => {
 
   const handleExportCSV = () => {
     if (filteredOrders.length === 0) return;
-    
+
     const headers = ["Order ID", "Products", "Total Amount", "Payment Status", "Order Status", "Order Date"];
     const csvRows = [headers.join(",")];
-    
+
     filteredOrders.forEach(order => {
       const orderId = order.orderid || order.orderitemid;
-      const products = order.items && order.items.length > 0 
-        ? order.items.map((i) => i.giftpack?.giftpackname || i.product?.productname || i.productname).join(" | ") 
+      const products = order.items && order.items.length > 0
+        ? order.items.map((i) => i.giftpack?.giftpackname || i.product?.productname || i.productname).join(" | ")
         : order.ordertype || order.itemtype || "Normal";
-      
+
       const row = [
         `ORD-${orderId}`,
         products,
@@ -146,7 +150,7 @@ const Orders = () => {
       ];
       csvRows.push(row.map(val => `"${val}"`).join(","));
     });
-    
+
     const csvString = csvRows.join("\n");
     const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
@@ -241,9 +245,9 @@ const Orders = () => {
       else if (actionType === "pickup") route = APIROUTES.SCHEDULE_PICKUP;
       else if (actionType === "label") route = APIROUTES.GENERATE_LABEL;
       else if (actionType === "cancel") route = APIROUTES.CANCEL_SHIPMENT;
-      
+
       const response = await API.post(route, { orderid: Number(orderId) });
-      
+
       if (response.data && response.data.statusCode === 200) {
         alert(response.data.message || "Action successful!");
         // Refresh the current order details to get new shipping info
@@ -484,7 +488,7 @@ const Orders = () => {
                     </td>
                     <td>
                       <span className="amount">
-                        ₹{order.totalamount || order.totalprice}
+                        ₹{formatIndianAmount(order.totalamount || order.totalprice)}
                       </span>
                     </td>
                     <td>
@@ -506,6 +510,13 @@ const Orders = () => {
                     </td>
                     <td>
                       <div className="action-cell">
+                        <button
+                          className="btn-primary"
+                          onClick={() => navigate(`/sales/add?orderId=${encodeURIComponent(order.orderid || order.orderitemid)}`)}
+                          style={{ padding: "6px 10px", fontSize: "12px" }}
+                        >
+                          Add Sale
+                        </button>
                         <button
                           className="action-btn view"
                           title="View Order"
@@ -849,10 +860,10 @@ const Orders = () => {
                                 style={{ minWidth: "80px", textAlign: "right", display: "flex", flexDirection: "column", gap: "2px" }}
                               >
                                 <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: "500" }}>
-                                  ₹{item.price || 0} × {item.quantity || 1}
+                                  ₹{formatIndianAmount(item.price || 0)} × {item.quantity || 1}
                                 </span>
                                 <span style={{ fontWeight: "600", color: "var(--text-main)" }}>
-                                  ₹{item.totalprice || item.price || 0}
+                                  ₹{formatIndianAmount(item.totalprice || item.price || 0)}
                                 </span>
                               </div>
                             </div>
@@ -886,7 +897,7 @@ const Orders = () => {
                                   {item.giftpack && (
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", paddingBottom: "6px", borderBottom: "1px dashed #e2e8f0", marginBottom: "2px" }}>
                                       <span style={{ color: "var(--text-main)", fontWeight: "500" }}>Base Box Price</span>
-                                      <span style={{ color: "var(--text-main)", fontWeight: "600" }}>₹{item.giftpack.giftpackprice || 0}</span>
+                                      <span style={{ color: "var(--text-main)", fontWeight: "600" }}>₹{formatIndianAmount(item.giftpack.giftpackprice || 0)}</span>
                                     </div>
                                   )}
                                   {item.giftpackproducts.map((gp, gidx) => (
@@ -904,8 +915,8 @@ const Orders = () => {
                                         <span style={{ color: "var(--text-main)" }}>{gp.productname}</span>
                                       </div>
                                       <div style={{ display: "flex", alignItems: "center", gap: "12px", color: "var(--text-muted)", fontWeight: "500" }}>
-                                        <span>₹{gp.sellingprice || gp.price || 0} × {gp.quantity}</span>
-                                        <span style={{ color: "var(--text-main)", fontWeight: "600" }}>₹{gp.totalprice || 0}</span>
+                                        <span>₹{formatIndianAmount(gp.sellingprice || gp.price || 0)} × {gp.quantity}</span>
+                                        <span style={{ color: "var(--text-main)", fontWeight: "600" }}>₹{formatIndianAmount(gp.totalprice || 0)}</span>
                                       </div>
                                     </div>
                                   ))}
@@ -1127,7 +1138,7 @@ const Orders = () => {
                                       marginTop: "2px",
                                     }}
                                   >
-                                    ₹{item.calculatedprice}
+                                    ₹{formatIndianAmount(item.calculatedprice)}
                                   </strong>
                                 </div>
                               </div>
@@ -1301,33 +1312,33 @@ const Orders = () => {
                         <span>Subtotal</span>
                         <span>
                           ₹
-                          {(selectedOrder.order?.totalamount || 
-                            selectedOrder.totalprice || 
-                            (selectedOrder.price && selectedOrder.quantity ? selectedOrder.price * selectedOrder.quantity : 0)) + 
-                            (selectedOrder.order?.discount_amount || selectedOrder.discount_amount || 0)}
+                          {formatIndianAmount((selectedOrder.order?.totalamount ||
+                            selectedOrder.totalprice ||
+                            (selectedOrder.price && selectedOrder.quantity ? selectedOrder.price * selectedOrder.quantity : 0)) +
+                            (selectedOrder.order?.discount_amount || selectedOrder.discount_amount || 0))}
                         </span>
                       </div>
                       {(selectedOrder.order?.discount_amount > 0 || selectedOrder.discount_amount > 0) && (
                         <div className="row" style={{ color: "#16a34a" }}>
                           <span>Coupon Discount ({selectedOrder.order?.coupon_code || selectedOrder.coupon_code || ''})</span>
-                          <span>-₹{selectedOrder.order?.discount_amount || selectedOrder.discount_amount}</span>
+                          <span>-₹{formatIndianAmount(selectedOrder.order?.discount_amount || selectedOrder.discount_amount)}</span>
                         </div>
                       )}
                       {selectedOrder.giftcardprice && (
                         <div className="row">
                           <span>Gift Card</span>
-                          <span>₹{selectedOrder.giftcardprice}</span>
+                          <span>₹{formatIndianAmount(selectedOrder.giftcardprice)}</span>
                         </div>
                       )}
                       <div className="row grand-total">
                         <span>Total Amount</span>
                         <span>
                           ₹
-                          {selectedOrder.order?.totalamount ||
+                          {formatIndianAmount(selectedOrder.order?.totalamount ||
                             selectedOrder.totalprice ||
                             (selectedOrder.price && selectedOrder.quantity
                               ? selectedOrder.price * selectedOrder.quantity
-                              : 0)}
+                              : 0))}
                         </span>
                       </div>
                     </div>
@@ -1341,7 +1352,7 @@ const Orders = () => {
                         <h4 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#1e293b", display: "flex", alignItems: "center", gap: "6px" }}>
                           <Truck size={16} /> Logistics Management
                         </h4>
-                        
+
                         <div style={{ fontSize: "13px", color: "#475569", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "4px" }}>
                           <div><strong>AWB:</strong> {selectedOrder.order.shipping_info.awb_code || "Not Assigned"}</div>
                           <div><strong>Courier:</strong> {selectedOrder.order.shipping_info.courier_name || "N/A"}</div>
@@ -1359,7 +1370,7 @@ const Orders = () => {
                               {processingId === `shiprocket_assign_${selectedOrder.order.orderid}` ? <Loader2 size={14} className="animate-spin" /> : "Assign AWB"}
                             </button>
                           )}
-                          
+
                           {selectedOrder.order.shipping_info.awb_code && (
                             <>
                               <button
@@ -1370,7 +1381,7 @@ const Orders = () => {
                               >
                                 {processingId === `shiprocket_pickup_${selectedOrder.order.orderid}` ? <Loader2 size={14} className="animate-spin" /> : "Schedule Pickup"}
                               </button>
-                              
+
                               <button
                                 className="btn-secondary"
                                 style={{ padding: "6px 12px", fontSize: "12px", backgroundColor: "#10b981", color: "white", border: "none" }}
@@ -1393,12 +1404,12 @@ const Orders = () => {
                             </button>
                           )}
                         </div>
-                        
+
                         {selectedOrder.order.shipping_info.tracking_url && (
                           <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px dashed #cbd5e1" }}>
-                            <a 
-                              href={selectedOrder.order.shipping_info.tracking_url} 
-                              target="_blank" 
+                            <a
+                              href={selectedOrder.order.shipping_info.tracking_url}
+                              target="_blank"
                               rel="noopener noreferrer"
                               style={{ fontSize: "13px", color: "#2563eb", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px", fontWeight: "500" }}
                             >
@@ -1604,7 +1615,7 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
   };
 
   const [draggingTarget, setDraggingTarget] = useState(null);
-  
+
   const handleMouseDown = (e, target) => {
     setDraggingTarget(target);
     setActiveTab(target);
@@ -1657,28 +1668,28 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
     try {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      
+
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.src = `${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage}`;
-      
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = () => {
-            img.crossOrigin = "";
-            img.src = `${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage}?not-anonymous`;
-            img.onload = resolve;
-            img.onerror = reject;
+          img.crossOrigin = "";
+          img.src = `${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage}?not-anonymous`;
+          img.onload = resolve;
+          img.onerror = reject;
         };
       });
-      
+
       const canvasWidth = 800;
       const canvasHeight = (img.height / img.width) * canvasWidth;
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
-      
+
       ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-      
+
       ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -1686,24 +1697,24 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
       ctx.globalAlpha = msgConfig.opacity;
       ctx.textAlign = msgConfig.align;
       ctx.textBaseline = "middle";
-      const msgFontSize = msgConfig.size * (canvasWidth / 400); 
+      const msgFontSize = msgConfig.size * (canvasWidth / 400);
       ctx.font = `${msgConfig.style === 'italic' ? 'italic ' : ''}${msgConfig.weight} ${msgFontSize}px ${msgConfig.family}`;
       if (ctx.letterSpacing !== undefined) {
-         ctx.letterSpacing = `${msgConfig.letterSpacing * (canvasWidth / 400)}px`;
+        ctx.letterSpacing = `${msgConfig.letterSpacing * (canvasWidth / 400)}px`;
       }
       ctx.fillStyle = msgConfig.color;
       ctx.shadowColor = "rgba(255,255,255,0.8)";
       ctx.shadowBlur = 4;
-      
+
       const msgX = (msgConfig.x / 100) * canvasWidth;
       const msgY = (msgConfig.y / 100) * canvasHeight;
-      
+
       const msgText = applyTransform(previewGiftCard.giftmessage || "", msgConfig.transform);
       const words = msgText.split(' ');
       let line = '';
       const lines = [];
       const maxWidth = canvasWidth * 0.8;
-      
+
       for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
         const metrics = ctx.measureText(testLine);
@@ -1715,14 +1726,14 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
         }
       }
       lines.push(line);
-      
+
       let y = msgY - ((lines.length - 1) * msgFontSize * 1.2) / 2;
       for (let i = 0; i < lines.length; i++) {
         ctx.fillText(lines[i], msgX, y);
         y += msgFontSize * 1.2;
       }
       ctx.globalAlpha = 1;
-      
+
       // Draw Sender
       ctx.globalAlpha = senderConfig.opacity;
       ctx.textAlign = senderConfig.align;
@@ -1730,17 +1741,17 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
       const senderFontSize = senderConfig.size * (canvasWidth / 400);
       ctx.font = `${senderConfig.style === 'italic' ? 'italic ' : ''}${senderConfig.weight} ${senderFontSize}px ${senderConfig.family}`;
       if (ctx.letterSpacing !== undefined) {
-         ctx.letterSpacing = `${senderConfig.letterSpacing * (canvasWidth / 400)}px`;
+        ctx.letterSpacing = `${senderConfig.letterSpacing * (canvasWidth / 400)}px`;
       }
       ctx.fillStyle = senderConfig.color;
-      
+
       const senderX = (senderConfig.x / 100) * canvasWidth;
       const senderY = (senderConfig.y / 100) * canvasHeight;
-      
+
       const senderText = applyTransform(`- ${previewGiftCard.sendername}`, senderConfig.transform);
       ctx.fillText(senderText, senderX, senderY);
       ctx.globalAlpha = 1;
-      
+
       const dataUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = dataUrl;
@@ -1748,7 +1759,7 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      
+
     } catch (err) {
       console.error("Failed to generate gift card image", err);
       alert("Could not generate the image.");
@@ -1758,210 +1769,210 @@ const GiftCardEditor = ({ previewGiftCard, onClose }) => {
   };
 
   return (
-     <div className="modal-overlay" style={{ zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div
-          className="modal-content animate-pop"
-          onClick={(e) => e.stopPropagation()}
-          style={{ width: "95%", maxWidth: "1100px", padding: 0, overflow: "hidden", borderRadius: "12px", background: "#fff", display: "flex", flexDirection: "column", maxHeight: "90vh" }}
-        >
-          {/* Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", borderBottom: "1px solid #eee" }}>
-            <h3 style={{ margin: 0, fontSize: "16px", color: "var(--text-main)" }}>Customize Gift Card</h3>
-            <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#666" }}><X size={20} /></button>
-          </div>
+    <div className="modal-overlay" style={{ zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div
+        className="modal-content animate-pop"
+        onClick={(e) => e.stopPropagation()}
+        style={{ width: "95%", maxWidth: "1100px", padding: 0, overflow: "hidden", borderRadius: "12px", background: "#fff", display: "flex", flexDirection: "column", maxHeight: "90vh" }}
+      >
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", borderBottom: "1px solid #eee" }}>
+          <h3 style={{ margin: 0, fontSize: "16px", color: "var(--text-main)" }}>Customize Gift Card</h3>
+          <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", color: "#666" }}><X size={20} /></button>
+        </div>
 
-          {/* Body */}
-          <div style={{ display: "flex", flexWrap: "wrap", overflow: "auto" }}>
-            
-            {/* Preview Column */}
-            <div style={{ flex: "2 1 600px", padding: "20px", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", borderRight: "1px solid #eee", justifyContent: "center" }}>
-               <div 
-                 ref={containerRef}
-                 style={{
-                   position: "relative",
-                   display: "inline-block",
-                   maxWidth: "100%",
-                   borderRadius: "8px",
-                   overflow: "hidden",
-                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                   userSelect: "none"
-                 }}
-               >
-                  <img 
-                    src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage}`}
-                    alt="Gift Card Preview"
-                    style={{
-                      display: "block",
-                      maxWidth: "100%",
-                      maxHeight: "75vh",
-                      width: "auto",
-                      height: "auto",
-                      objectFit: "contain"
-                    }}
-                  />
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(255,255,255,0.4)", pointerEvents: "none" }}></div>
-                  
-                  {/* Draggable Message */}
-                  <div 
-                    onMouseDown={(e) => handleMouseDown(e, 'msg')}
-                    style={{ 
-                      position: "absolute", 
-                      left: `${msgConfig.x}%`, 
-                      top: `${msgConfig.y}%`, 
-                      transform: `translate(${msgConfig.align === 'center' ? '-50%' : msgConfig.align === 'right' ? '-100%' : '0'}, -50%)`,
-                      textAlign: msgConfig.align,
-                      cursor: draggingTarget === 'msg' ? "grabbing" : "grab",
-                      width: "80%",
-                      zIndex: 10,
-                      border: activeTab === 'msg' ? "1px dashed #db2777" : "1px dashed transparent"
-                    }}
-                  >
-                    <p style={{ 
-                      fontFamily: msgConfig.family, 
-                      fontSize: `${msgConfig.size * scaleFactor}px`, 
-                      fontWeight: msgConfig.weight, 
-                      color: msgConfig.color,
-                      fontStyle: msgConfig.style,
-                      opacity: msgConfig.opacity,
-                      letterSpacing: `${msgConfig.letterSpacing * scaleFactor}px`,
-                      textTransform: msgConfig.transform,
-                      margin: 0,
-                      textShadow: "0 1px 2px rgba(255,255,255,0.8)"
-                    }}>
-                      {previewGiftCard.giftmessage}
-                    </p>
-                  </div>
+        {/* Body */}
+        <div style={{ display: "flex", flexWrap: "wrap", overflow: "auto" }}>
 
-                  {/* Draggable Sender */}
-                  <div 
-                    onMouseDown={(e) => handleMouseDown(e, 'sender')}
-                    style={{ 
-                      position: "absolute", 
-                      left: `${senderConfig.x}%`, 
-                      top: `${senderConfig.y}%`, 
-                      transform: `translate(${senderConfig.align === 'center' ? '-50%' : senderConfig.align === 'right' ? '-100%' : '0'}, -50%)`,
-                      textAlign: senderConfig.align,
-                      cursor: draggingTarget === 'sender' ? "grabbing" : "grab",
-                      zIndex: 10,
-                      border: activeTab === 'sender' ? "1px dashed #db2777" : "1px dashed transparent",
-                      whiteSpace: "nowrap"
-                    }}
-                  >
-                    <p style={{ 
-                      fontFamily: senderConfig.family, 
-                      fontSize: `${senderConfig.size * scaleFactor}px`, 
-                      fontWeight: senderConfig.weight, 
-                      color: senderConfig.color,
-                      fontStyle: senderConfig.style,
-                      opacity: senderConfig.opacity,
-                      letterSpacing: `${senderConfig.letterSpacing * scaleFactor}px`,
-                      textTransform: senderConfig.transform,
-                      margin: 0,
-                      textShadow: "0 1px 2px rgba(255,255,255,0.8)"
-                    }}>
-                      - {previewGiftCard.sendername}
-                    </p>
-                  </div>
-               </div>
-               
-               <p style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>* Drag text to reposition</p>
+          {/* Preview Column */}
+          <div style={{ flex: "2 1 600px", padding: "20px", background: "#f8f9fa", display: "flex", flexDirection: "column", alignItems: "center", borderRight: "1px solid #eee", justifyContent: "center" }}>
+            <div
+              ref={containerRef}
+              style={{
+                position: "relative",
+                display: "inline-block",
+                maxWidth: "100%",
+                borderRadius: "8px",
+                overflow: "hidden",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                userSelect: "none"
+              }}
+            >
+              <img
+                src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${previewGiftCard.cardimage}`}
+                alt="Gift Card Preview"
+                style={{
+                  display: "block",
+                  maxWidth: "100%",
+                  maxHeight: "75vh",
+                  width: "auto",
+                  height: "auto",
+                  objectFit: "contain"
+                }}
+              />
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(255,255,255,0.4)", pointerEvents: "none" }}></div>
+
+              {/* Draggable Message */}
+              <div
+                onMouseDown={(e) => handleMouseDown(e, 'msg')}
+                style={{
+                  position: "absolute",
+                  left: `${msgConfig.x}%`,
+                  top: `${msgConfig.y}%`,
+                  transform: `translate(${msgConfig.align === 'center' ? '-50%' : msgConfig.align === 'right' ? '-100%' : '0'}, -50%)`,
+                  textAlign: msgConfig.align,
+                  cursor: draggingTarget === 'msg' ? "grabbing" : "grab",
+                  width: "80%",
+                  zIndex: 10,
+                  border: activeTab === 'msg' ? "1px dashed #db2777" : "1px dashed transparent"
+                }}
+              >
+                <p style={{
+                  fontFamily: msgConfig.family,
+                  fontSize: `${msgConfig.size * scaleFactor}px`,
+                  fontWeight: msgConfig.weight,
+                  color: msgConfig.color,
+                  fontStyle: msgConfig.style,
+                  opacity: msgConfig.opacity,
+                  letterSpacing: `${msgConfig.letterSpacing * scaleFactor}px`,
+                  textTransform: msgConfig.transform,
+                  margin: 0,
+                  textShadow: "0 1px 2px rgba(255,255,255,0.8)"
+                }}>
+                  {previewGiftCard.giftmessage}
+                </p>
+              </div>
+
+              {/* Draggable Sender */}
+              <div
+                onMouseDown={(e) => handleMouseDown(e, 'sender')}
+                style={{
+                  position: "absolute",
+                  left: `${senderConfig.x}%`,
+                  top: `${senderConfig.y}%`,
+                  transform: `translate(${senderConfig.align === 'center' ? '-50%' : senderConfig.align === 'right' ? '-100%' : '0'}, -50%)`,
+                  textAlign: senderConfig.align,
+                  cursor: draggingTarget === 'sender' ? "grabbing" : "grab",
+                  zIndex: 10,
+                  border: activeTab === 'sender' ? "1px dashed #db2777" : "1px dashed transparent",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                <p style={{
+                  fontFamily: senderConfig.family,
+                  fontSize: `${senderConfig.size * scaleFactor}px`,
+                  fontWeight: senderConfig.weight,
+                  color: senderConfig.color,
+                  fontStyle: senderConfig.style,
+                  opacity: senderConfig.opacity,
+                  letterSpacing: `${senderConfig.letterSpacing * scaleFactor}px`,
+                  textTransform: senderConfig.transform,
+                  margin: 0,
+                  textShadow: "0 1px 2px rgba(255,255,255,0.8)"
+                }}>
+                  - {previewGiftCard.sendername}
+                </p>
+              </div>
             </div>
 
-            {/* Controls Column */}
-            <div style={{ flex: "1 1 250px", padding: "20px", display: "flex", flexDirection: "column", gap: "15px" }}>
-               <div style={{ display: "flex", borderBottom: "1px solid #ddd", marginBottom: "10px" }}>
-                  <button 
-                    style={{ flex: 1, padding: "8px", border: "none", background: activeTab === 'msg' ? "#fff0f6" : "transparent", color: activeTab === 'msg' ? "#db2777" : "#666", fontWeight: "600", cursor: "pointer", borderBottom: activeTab === 'msg' ? "2px solid #db2777" : "none" }}
-                    onClick={() => setActiveTab('msg')}
-                  >Message</button>
-                  <button 
-                    style={{ flex: 1, padding: "8px", border: "none", background: activeTab === 'sender' ? "#fff0f6" : "transparent", color: activeTab === 'sender' ? "#db2777" : "#666", fontWeight: "600", cursor: "pointer", borderBottom: activeTab === 'sender' ? "2px solid #db2777" : "none" }}
-                    onClick={() => setActiveTab('sender')}
-                  >Sender</button>
-               </div>
+            <p style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>* Drag text to reposition</p>
+          </div>
 
-               <div style={{ display: "flex", flexDirection: "column", gap: "12px", overflowY: "auto", paddingRight: "5px" }}>
-                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Font Family</label>
-                 <select value={activeConfig.family} onChange={e => updateConfig('family', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd" }}>
-                   <option value="'Playfair Display', serif, sans-serif">Playfair Display</option>
-                   <option value="Inter, sans-serif">Inter</option>
-                   <option value="Arial, sans-serif">Arial</option>
-                   <option value="Georgia, serif">Georgia</option>
-                   <option value="'Courier New', monospace">Courier New</option>
-                 </select>
+          {/* Controls Column */}
+          <div style={{ flex: "1 1 250px", padding: "20px", display: "flex", flexDirection: "column", gap: "15px" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid #ddd", marginBottom: "10px" }}>
+              <button
+                style={{ flex: 1, padding: "8px", border: "none", background: activeTab === 'msg' ? "#fff0f6" : "transparent", color: activeTab === 'msg' ? "#db2777" : "#666", fontWeight: "600", cursor: "pointer", borderBottom: activeTab === 'msg' ? "2px solid #db2777" : "none" }}
+                onClick={() => setActiveTab('msg')}
+              >Message</button>
+              <button
+                style={{ flex: 1, padding: "8px", border: "none", background: activeTab === 'sender' ? "#fff0f6" : "transparent", color: activeTab === 'sender' ? "#db2777" : "#666", fontWeight: "600", cursor: "pointer", borderBottom: activeTab === 'sender' ? "2px solid #db2777" : "none" }}
+                onClick={() => setActiveTab('sender')}
+              >Sender</button>
+            </div>
 
-                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Font Size ({activeConfig.size}px)</label>
-                 <input type="range" min="10" max="60" value={activeConfig.size} onChange={e => updateConfig('size', parseInt(e.target.value))} style={{ margin: 0 }} />
-                 
-                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Letter Spacing ({activeConfig.letterSpacing}px)</label>
-                 <input type="range" min="-5" max="20" value={activeConfig.letterSpacing} onChange={e => updateConfig('letterSpacing', parseInt(e.target.value))} style={{ margin: 0 }} />
-                 
-                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Opacity ({activeConfig.opacity})</label>
-                 <input type="range" min="0" max="1" step="0.1" value={activeConfig.opacity} onChange={e => updateConfig('opacity', parseFloat(e.target.value))} style={{ margin: 0 }} />
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", overflowY: "auto", paddingRight: "5px" }}>
+              <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Font Family</label>
+              <select value={activeConfig.family} onChange={e => updateConfig('family', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd" }}>
+                <option value="'Playfair Display', serif, sans-serif">Playfair Display</option>
+                <option value="Inter, sans-serif">Inter</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Courier New', monospace">Courier New</option>
+              </select>
 
-                 <div style={{ display: "flex", gap: "10px" }}>
-                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-                     <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Color</label>
-                     <input type="color" value={activeConfig.color} onChange={e => updateConfig('color', e.target.value)} style={{ width: "100%", height: "36px", border: "1px solid #ddd", borderRadius: "4px", padding: 0 }} />
-                   </div>
-                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-                     <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Weight</label>
-                     <select value={activeConfig.weight} onChange={e => updateConfig('weight', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
-                       <option value="400">Normal</option>
-                       <option value="600">Semi Bold</option>
-                       <option value="700">Bold</option>
-                     </select>
-                   </div>
-                 </div>
-                 
-                 <div style={{ display: "flex", gap: "10px" }}>
-                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-                     <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Style</label>
-                     <select value={activeConfig.style} onChange={e => updateConfig('style', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
-                       <option value="normal">Normal</option>
-                       <option value="italic">Italic</option>
-                     </select>
-                   </div>
-                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-                     <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Transform</label>
-                     <select value={activeConfig.transform} onChange={e => updateConfig('transform', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
-                       <option value="none">None</option>
-                       <option value="uppercase">Uppercase</option>
-                       <option value="lowercase">Lowercase</option>
-                       <option value="capitalize">Capitalize</option>
-                     </select>
-                   </div>
-                 </div>
+              <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Font Size ({activeConfig.size}px)</label>
+              <input type="range" min="10" max="60" value={activeConfig.size} onChange={e => updateConfig('size', parseInt(e.target.value))} style={{ margin: 0 }} />
 
-                 <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Alignment</label>
-                 <div style={{ display: "flex", gap: "5px" }}>
-                   {['left', 'center', 'right'].map(align => (
-                     <button 
-                       key={align}
-                       onClick={() => updateConfig('align', align)}
-                       style={{ flex: 1, padding: "6px", background: activeConfig.align === align ? "#db2777" : "#f1f5f9", color: activeConfig.align === align ? "white" : "#333", border: "none", borderRadius: "4px", cursor: "pointer", textTransform: "capitalize" }}
-                     >
-                       {align}
-                     </button>
-                   ))}
-                 </div>
-               </div>
+              <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Letter Spacing ({activeConfig.letterSpacing}px)</label>
+              <input type="range" min="-5" max="20" value={activeConfig.letterSpacing} onChange={e => updateConfig('letterSpacing', parseInt(e.target.value))} style={{ margin: 0 }} />
 
-               <div style={{ marginTop: "auto", paddingTop: "20px" }}>
-                 <button 
-                   className="btn-primary" 
-                   onClick={downloadImage}
-                   style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", background: "#db2777", border: "none", padding: "12px" }}
-                   disabled={isDownloading}
-                 >
-                   {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-                   {isDownloading ? "Generating..." : "Download Final Image"}
-                 </button>
-               </div>
+              <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Opacity ({activeConfig.opacity})</label>
+              <input type="range" min="0" max="1" step="0.1" value={activeConfig.opacity} onChange={e => updateConfig('opacity', parseFloat(e.target.value))} style={{ margin: 0 }} />
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Color</label>
+                  <input type="color" value={activeConfig.color} onChange={e => updateConfig('color', e.target.value)} style={{ width: "100%", height: "36px", border: "1px solid #ddd", borderRadius: "4px", padding: 0 }} />
+                </div>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Weight</label>
+                  <select value={activeConfig.weight} onChange={e => updateConfig('weight', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
+                    <option value="400">Normal</option>
+                    <option value="600">Semi Bold</option>
+                    <option value="700">Bold</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Style</label>
+                  <select value={activeConfig.style} onChange={e => updateConfig('style', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
+                    <option value="normal">Normal</option>
+                    <option value="italic">Italic</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Transform</label>
+                  <select value={activeConfig.transform} onChange={e => updateConfig('transform', e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd", height: "36px" }}>
+                    <option value="none">None</option>
+                    <option value="uppercase">Uppercase</option>
+                    <option value="lowercase">Lowercase</option>
+                    <option value="capitalize">Capitalize</option>
+                  </select>
+                </div>
+              </div>
+
+              <label style={{ fontSize: "12px", fontWeight: "600", margin: 0 }}>Alignment</label>
+              <div style={{ display: "flex", gap: "5px" }}>
+                {['left', 'center', 'right'].map(align => (
+                  <button
+                    key={align}
+                    onClick={() => updateConfig('align', align)}
+                    style={{ flex: 1, padding: "6px", background: activeConfig.align === align ? "#db2777" : "#f1f5f9", color: activeConfig.align === align ? "white" : "#333", border: "none", borderRadius: "4px", cursor: "pointer", textTransform: "capitalize" }}
+                  >
+                    {align}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginTop: "auto", paddingTop: "20px" }}>
+              <button
+                className="btn-primary"
+                onClick={downloadImage}
+                style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", background: "#db2777", border: "none", padding: "12px" }}
+                disabled={isDownloading}
+              >
+                {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                {isDownloading ? "Generating..." : "Download Final Image"}
+              </button>
             </div>
           </div>
         </div>
-     </div>
+      </div>
+    </div>
   );
 };
 

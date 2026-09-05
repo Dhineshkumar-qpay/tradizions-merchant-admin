@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import {
     Search,
     Filter,
@@ -222,7 +223,7 @@ const Transactions = () => {
                                             <span>{txn.customer}</span>
                                         </div>
                                     </td>
-                                    <td><span className="amount">₹{txn.amount}</span></td>
+                                    <td><span className="amount">₹{formatIndianAmount(txn.amount)}</span></td>
                                     <td>
                                         <div className="method-cell">
                                             {getMethodIcon(txn.method)}

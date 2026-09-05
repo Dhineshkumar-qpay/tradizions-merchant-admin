@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Search, Edit2, Trash2, Eye, Box, X, Share2, Printer, Download } from "lucide-react";
 import { API } from "../../service/api_service";
-import { APIROUTES } from "../../routes/api_routes";
+import { APIROUTES ,IMAGE_URL} from "../../routes/api_routes";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import "../Orders.css";
@@ -25,8 +25,12 @@ const SupplierList = () => {
     email: "",
     gst: "",
     address: "",
+    logo: "",
+    brandname: "",
+    location: "",
     status: "active",
   });
+  const [logoFile, setLogoFile] = useState(null);
 
   const [qrModalData, setQrModalData] = useState(null);
 
@@ -100,9 +104,13 @@ const SupplierList = () => {
         email: "",
         gst: "",
         address: "",
+        logo: "",
+        brandname: "",
+        location: "",
         status: "active",
       });
     }
+    setLogoFile(null);
     setIsModalOpen(true);
   };
 
@@ -110,7 +118,13 @@ const SupplierList = () => {
     e.preventDefault();
     try {
       const endpoint = modalMode === "edit" ? APIROUTES.UPDATESUPPLIER : APIROUTES.ADDSUPPLIER;
-      const payload = { ...currentSupplier };
+      const payload = new FormData();
+      Object.entries(currentSupplier).forEach(([key, value]) => {
+        if (key !== "logo" && value !== undefined && value !== null) {
+          payload.append(key, value);
+        }
+      });
+      if (logoFile) payload.append("logo", logoFile);
 
       const res = await API.post(endpoint, payload);
       if (res.data && res.data.statusCode === 200) {
@@ -151,7 +165,6 @@ const SupplierList = () => {
   }, [searchQuery, statusFilter]);
 
   // Pagination Logic
-  const totalPages = Math.ceil(filteredSuppliers.length / rowsPerPage);
   const indexOfLastItem = currentPage * rowsPerPage;
   const indexOfFirstItem = indexOfLastItem - rowsPerPage;
   const currentSuppliers = filteredSuppliers.slice(indexOfFirstItem, indexOfLastItem);
@@ -400,6 +413,41 @@ const SupplierList = () => {
                       disabled={modalMode === "view"}
                       value={currentSupplier.name}
                       onChange={handleInputChange}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label className="field-label">Brand Name</label>
+                    <input
+                      type="text"
+                      name="brandname"
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.brandname || ""}
+                      onChange={handleInputChange}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label className="field-label">Location</label>
+                    <input
+                      type="text"
+                      name="location"
+                      disabled={modalMode === "view"}
+                      value={currentSupplier.location || ""}
+                      onChange={handleInputChange}
+                      className="form-input"
+                    />
+                  </div>
+                  <div className="field-group">
+                    <label className="field-label">Logo</label>
+                    {currentSupplier.logo && (
+                      <img src={IMAGE_URL+currentSupplier.logo} alt="Supplier logo" style={{ width: 48, height: 48, objectFit: "contain", marginBottom: 8 }} />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      disabled={modalMode === "view"}
+                      onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
                       className="form-input"
                     />
                   </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../utils/formatters";
 import { useParams, useNavigate } from "react-router-dom";
 import { API } from "../../service/api_service";
 import { APIROUTES } from "../../routes/api_routes";
@@ -127,7 +128,7 @@ const SaleInvoice = () => {
                 <div className="info-text">
                   <span className="info-label" style={{ color: '#0f172a' }}>Grand Total</span>
                   <span className="info-value" style={{ fontSize: '24px', color: '#1e40af' }}>
-                    ₹{parseFloat(sale.totalamount).toFixed(2)}
+                    ₹{formatIndianAmount(parseFloat(sale.totalamount), 2)}
                   </span>
                 </div>
               </div>
@@ -170,11 +171,11 @@ const SaleInvoice = () => {
                       <div className="prod-footer">
                         <div className="prod-stat">
                           <span className="stat-label">Unit Price</span>
-                          <span className="stat-value">₹{pricePerUnit.toFixed(2)}</span>
+                          <span className="stat-value">₹{formatIndianAmount(pricePerUnit, 2)}</span>
                         </div>
                         <div className="prod-stat right">
                           <span className="stat-label">Est. Total</span>
-                          <span className="stat-value">₹{amount.toFixed(2)}</span>
+                          <span className="stat-value">₹{formatIndianAmount(amount, 2)}</span>
                         </div>
                       </div>
                     </div>

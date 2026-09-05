@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: import.meta.env.VITE_API_URL || "https://demo.sevanta.in/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -10,7 +10,9 @@ const API = axios.create({
 
 API.interceptors.request.use(
   (config) => {
-    console.log(`------------------------${config.data}`);
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
 
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("token");

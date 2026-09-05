@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../utils/formatters";
 import { Plus, Search, Eye, Share2, Printer, Download } from "lucide-react";
 import { API } from "../../service/api_service";
 import { APIROUTES } from "../../routes/api_routes";
@@ -220,7 +221,7 @@ const SalesList = () => {
                     </td>
                     <td><span className="primary-text">{sale.customername}</span></td>
                     <td><span className="date">{new Date(sale.saledate).toLocaleDateString()}</span></td>
-                    <td><span className="amount">₹{parseFloat(sale.totalamount).toFixed(2)}</span></td>
+                    <td><span className="amount">₹{formatIndianAmount(parseFloat(sale.totalamount), 2)}</span></td>
                     <td>
                       <span
                         className={`status-badge ${sale.status === "completed" ? "delivered" : sale.status === "cancelled" ? "cancelled" : "pending"

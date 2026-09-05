@@ -75,10 +75,12 @@ const APIROUTES = {
   // Supplier API routes
   ADDSUPPLIER: "/supplier/add",
   GETALLSUPPLIERS: "/supplier/getall",
+  GETSUPPLIERBYID: "/supplier/getbyid",
   UPDATESUPPLIER: "/supplier/update",
   DELETESUPPLIER: "/supplier/delete",
   ADDSUPPLIERPRODUCT: "/supplier/product/add",
   GETALLSUPPLIERPRODUCTS: "/supplier/product/getall",
+  SEARCHPRODUCTS: "/supplier/product/search",
   UPDATESUPPLIERPRODUCT: "/supplier/product/update",
   DELETESUPPLIERPRODUCT: "/supplier/product/delete",
 
@@ -86,9 +88,12 @@ const APIROUTES = {
   ADDSALE: "/sales",
   GETALLSALES: "/sales/getall",
   GETSALEBYID: "/sales/getbyid",
+  SEARCHORDER: "/sales/search-order",
+  SEARCHORDERS: "/sales/search-orders",
+  GETORDERSUPPLIERS: "/sales/order-suppliers",
 };
 
 export { APIROUTES };
 
-export const IMAGE_URL = "https://demo.sevanta.in/api";
-// export const IMAGE_URL = "http://localhost:3003";
+// export const IMAGE_URL = "https://demo.sevanta.in/api";
+export const IMAGE_URL = "http://localhost:3003";

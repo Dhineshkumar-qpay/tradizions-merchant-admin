@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../utils/formatters";
 import { Loader2, Edit,
   Trash2,
   Filter,
@@ -253,11 +254,11 @@ const ListProducts = () => {
                       <div className="p-cell-price">
                         {p.sellingprice > 0 ? (
                           <>
-                            <span className="p-offer">₹{p.sellingprice}</span>
-                            <span className="p-original" style={{ textDecoration: "line-through" }}>₹{p.price}</span>
+                            <span className="p-offer">₹{formatIndianAmount(p.sellingprice)}</span>
+                            <span className="p-original" style={{ textDecoration: "line-through" }}>₹{formatIndianAmount(p.price)}</span>
                           </>
                         ) : (
-                          <span className="p-offer">₹{p.price}</span>
+                          <span className="p-offer">₹{formatIndianAmount(p.price)}</span>
                         )}
                       </div>
                     </td>

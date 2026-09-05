@@ -1,138 +1,136 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, ArrowLeft, Save, ShoppingBag, Store } from "lucide-react";
+import { formatIndianAmount } from "../../utils/formatters";
+import { ArrowLeft, Save, ShoppingBag, Search } from "lucide-react";
 import { API } from "../../service/api_service";
 import { APIROUTES } from "../../routes/api_routes";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "../Orders.css";
 import "../business/Business.css";
 
 const AddSale = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [submitting, setSubmitting] = useState(false);
 
   // Basic Info
   const [orderId, setOrderId] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [saleDate, setSaleDate] = useState(new Date().toISOString().split('T')[0]);
-
-  const [suppliersList, setSuppliersList] = useState([]);
-  const [productsMap, setProductsMap] = useState({}); // supplierid -> products array
-
-  // Dynamic Supplier Groups
-  const [supplierGroups, setSupplierGroups] = useState([
-    {
-      id: Date.now(), // unique key
-      supplierid: "",
-      products: []
-    }
-  ]);
+  const [orderSearchLoading, setOrderSearchLoading] = useState(false);
+  const [orderLookupLoading, setOrderLookupLoading] = useState(false);
+  const [orderSearchResults, setOrderSearchResults] = useState([]);
+  const [foundOrder, setFoundOrder] = useState(null);
+  const [orderSaleItems, setOrderSaleItems] = useState([]);
 
   useEffect(() => {
-    fetchSuppliers();
-  }, []);
-
-  const fetchSuppliers = async () => {
-    try {
-      const res = await API.post(APIROUTES.GETALLSUPPLIERS, { status: "active" });
-      if (res.data && res.data.statusCode === 200) {
-        setSuppliersList(res.data.data);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch suppliers");
+    const value = orderId.trim();
+    if (!value || foundOrder) {
+      setOrderSearchResults([]);
+      return undefined;
     }
-  };
 
-  const fetchSupplierProducts = async (supplierid) => {
-    if (!supplierid || productsMap[supplierid]) return; // Already fetched
-    try {
-      const res = await API.post(APIROUTES.GETALLSUPPLIERPRODUCTS, { supplierid });
-      if (res.data && res.data.statusCode === 200) {
-        setProductsMap(prev => ({
-          ...prev,
-          [supplierid]: res.data.data
-        }));
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch products for supplier");
-    }
-  };
-
-  const handleSupplierChange = (groupIndex, supplierid) => {
-    const newGroups = [...supplierGroups];
-    newGroups[groupIndex].supplierid = supplierid;
-    newGroups[groupIndex].products = []; // Reset products if supplier changes
-    setSupplierGroups(newGroups);
-    if (supplierid) {
-      fetchSupplierProducts(supplierid);
-    }
-  };
-
-  const addSupplierGroup = () => {
-    setSupplierGroups([
-      ...supplierGroups,
-      {
-        id: Date.now(),
-        supplierid: "",
-        products: []
-      }
-    ]);
-  };
-
-  const removeSupplierGroup = (groupIndex) => {
-    const newGroups = [...supplierGroups];
-    newGroups.splice(groupIndex, 1);
-    setSupplierGroups(newGroups);
-  };
-
-  const addProductRow = (groupIndex) => {
-    const newGroups = [...supplierGroups];
-    newGroups[groupIndex].products.push({
-      id: Date.now(),
-      supplierproductid: "",
-      quantity: "",
-      unit: "kg",
-      price: ""
-    });
-    setSupplierGroups(newGroups);
-  };
-
-  const removeProductRow = (groupIndex, productIndex) => {
-    const newGroups = [...supplierGroups];
-    newGroups[groupIndex].products.splice(productIndex, 1);
-    setSupplierGroups(newGroups);
-  };
-
-  const handleProductChange = (groupIndex, productIndex, field, value) => {
-    const newGroups = [...supplierGroups];
-    const prod = newGroups[groupIndex].products[productIndex];
-    prod[field] = value;
-    
-    if (field === 'supplierproductid') {
-      const availableProducts = productsMap[newGroups[groupIndex].supplierid] || [];
-      const selectedProduct = availableProducts.find(p => p.id.toString() === prod.supplierproductid?.toString());
-      
-      if (selectedProduct) {
-        let basePricePerKg = parseFloat(selectedProduct.perproductkgprice);
-        if (!basePricePerKg || isNaN(basePricePerKg)) {
-          const dbTotalWeight = parseFloat(selectedProduct.totalweight);
-          const dbTotalPrice = parseFloat(selectedProduct.totalprice);
-          if (dbTotalWeight > 0) {
-            if (selectedProduct.unit.toLowerCase() === 'kg') {
-              basePricePerKg = dbTotalPrice / dbTotalWeight;
-            } else {
-              basePricePerKg = (dbTotalPrice / dbTotalWeight) * 1000;
-            }
-          }
+    const timer = setTimeout(async () => {
+      try {
+        setOrderLookupLoading(true);
+        const res = await API.post(APIROUTES.SEARCHORDERS, { search: value });
+        if (res.data?.statusCode === 200) {
+          setOrderSearchResults(res.data.data || []);
         }
-        
-        prod.price = (basePricePerKg || 0).toFixed(2);
+      } catch {
+        setOrderSearchResults([]);
+      } finally {
+        setOrderLookupLoading(false);
       }
-    }
+    }, 300);
 
-    setSupplierGroups(newGroups);
+    return () => clearTimeout(timer);
+  }, [orderId, foundOrder]);
+
+  const searchOrder = async (requestedOrderId = orderId) => {
+    if (!requestedOrderId.trim()) {
+      toast.error("Enter an order ID first");
+      return;
+    }
+    try {
+      setOrderSearchLoading(true);
+      const res = await API.post(APIROUTES.SEARCHORDER, { orderid: requestedOrderId.trim() });
+      if (res.data?.statusCode === 200) {
+        const order = res.data.data;
+        const supplierRes = await API.post(APIROUTES.GETORDERSUPPLIERS, {
+          orderid: order.orderid,
+        });
+        const supplierItems = supplierRes.data?.statusCode === 200
+          ? supplierRes.data.data?.items || []
+          : [];
+        setFoundOrder(order);
+        setOrderSearchResults([]);
+        setOrderSaleItems((order.items || []).map((item) => {
+          const supplierItem = supplierItems.find((entry) => (
+            String(entry.orderitemid) === String(item.orderitemid)
+          ));
+          const options = (supplierItem?.suppliers || item.supplieroptions || []).map((supplier) => ({
+            id: supplier.supplierproductid || supplier.id,
+            supplierid: supplier.supplierid,
+            suppliername: supplier.suppliername,
+            productid: supplier.productid,
+            productname: supplier.productname,
+            remainingweight: supplier.remainingweight,
+            unit: supplier.unit,
+            perproductkgprice: supplier.perproductkgprice,
+          }));
+          const selectedOption = options.length === 1 ? options[0] : null;
+          return {
+            id: item.orderitemid,
+            productid: item.productid,
+            productname: item.product?.productname || "Product",
+            orderquantitygrams: Number(item.orderquantitygrams || 0),
+            orderprice: Number(item.orderprice || 0),
+            supplieroptions: options,
+            supplierid: selectedOption?.supplierid || "",
+            supplierproductid: selectedOption?.id || "",
+            quantity: Number(item.orderquantitygrams || 0),
+            unit: "grams",
+            price: selectedOption ? (Number(selectedOption.perproductkgprice || 0) / 1000) : 0,
+            selectedProduct: selectedOption,
+          };
+        }));
+        setOrderId(String(order.orderid));
+        setCustomerName(order.user?.username || order.user?.phone || "");
+        if (order.createdAt) setSaleDate(new Date(order.createdAt).toISOString().split("T")[0]);
+        toast.success("Order found and details populated");
+      }
+    } catch (error) {
+      setFoundOrder(null);
+      toast.error(error?.response?.data?.message || "Order not found");
+    } finally {
+      setOrderSearchLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const orderIdFromUrl = searchParams.get("orderId");
+    if (orderIdFromUrl) {
+      setOrderId(orderIdFromUrl);
+      searchOrder(orderIdFromUrl);
+    }
+  }, [searchParams]);
+
+  const selectOrderSupplier = (itemIndex, supplierid) => {
+    const nextItems = [...orderSaleItems];
+    const item = nextItems[itemIndex];
+    const matchingOption = item.supplieroptions.find((option) => String(option.supplierid) === String(supplierid));
+
+    if (matchingOption) {
+      nextItems[itemIndex] = {
+        ...item,
+        supplierid,
+        supplierproductid: matchingOption.id,
+        selectedProduct: matchingOption,
+        price: Number(matchingOption.perproductkgprice || 0) / 1000,
+      };
+      setOrderSaleItems(nextItems);
+    }
   };
 
   const formatStock = (weight, unit) => {
@@ -151,13 +149,8 @@ const AddSale = () => {
 
   // Calculate Grand Total
   let grandTotal = 0;
-  supplierGroups.forEach(group => {
-    group.products.forEach(p => {
-      const qty = parseFloat(p.quantity) || 0;
-      const price = parseFloat(p.price) || 0;
-      const rowTotal = p.unit === 'grams' ? qty * (price / 1000) : qty * price;
-      grandTotal += rowTotal;
-    });
+  orderSaleItems.forEach((item) => {
+    grandTotal += (Number(item.quantity) || 0) * (Number(item.price) || 0);
   });
 
   const handleSubmit = async (e) => {
@@ -170,62 +163,37 @@ const AddSale = () => {
 
     const payloadItems = [];
 
-    for (const group of supplierGroups) {
-      if (!group.supplierid) continue;
-
-      for (const prod of group.products) {
-        if (!prod.supplierproductid) continue;
-
-        const q = parseFloat(prod.quantity);
-        if (isNaN(q) || q <= 0) {
-          toast.error("Quantity must be greater than 0");
+    if (foundOrder) {
+      for (const item of orderSaleItems) {
+        if (!item.supplierid || !item.supplierproductid) {
+          toast.error(`Select a supplier for ${item.productname}`);
           return;
         }
 
-        const price = parseFloat(prod.price);
-        if (isNaN(price) || price < 0) {
-          toast.error("Price must be valid");
+        const quantity = Number(item.quantity);
+        const price = Number(item.price);
+        if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isFinite(price) || price < 0) {
+          toast.error(`Invalid quantity or price for ${item.productname}`);
           return;
         }
 
-        // Stock validation before submission
-        const availableProducts = productsMap[group.supplierid] || [];
-        const productDetails = availableProducts.find(p => p.id.toString() === prod.supplierproductid.toString());
-
-        if (productDetails) {
-          const requestedUnit = prod.unit;
-          const productUnit = productDetails.unit.toLowerCase();
-          let requestedGrams = requestedUnit === "kg" ? q * 1000 : q;
-          let availableGrams = productUnit === "kg" ? parseFloat(productDetails.remainingweight) * 1000 : parseFloat(productDetails.remainingweight);
-
-          if (requestedGrams > availableGrams) {
-            toast.error(`Insufficient stock for ${productDetails.productname}. Available stock is ${formatStock(productDetails.remainingweight, productUnit)}.`);
-            return;
-          }
-        }
-
-        // Check duplicate product in same supplier block
-        const isDuplicate = payloadItems.some(item =>
-          item.supplierid.toString() === group.supplierid.toString() &&
-          item.supplierproductid.toString() === prod.supplierproductid.toString()
-        );
-
-        if (isDuplicate) {
-          toast.error("Duplicate product found in the same supplier. Please combine quantities.");
+        const supplierProduct = item.selectedProduct;
+        const availableGrams = supplierProduct
+          ? String(supplierProduct.unit).toLowerCase() === "kg"
+            ? Number(supplierProduct.remainingweight) * 1000
+            : Number(supplierProduct.remainingweight)
+          : 0;
+        if (supplierProduct && quantity > availableGrams) {
+          toast.error(`Insufficient stock for ${item.productname}. Available stock is ${formatStock(supplierProduct.remainingweight, supplierProduct.unit)}.`);
           return;
-        }
-
-        let submitPrice = price;
-        if (prod.unit === 'grams') {
-           submitPrice = price / 1000;
         }
 
         payloadItems.push({
-          supplierid: parseInt(group.supplierid),
-          supplierproductid: parseInt(prod.supplierproductid),
-          quantity: q,
-          unit: prod.unit,
-          price: submitPrice
+          supplierid: Number(item.supplierid),
+          supplierproductid: Number(item.supplierproductid),
+          quantity,
+          unit: "grams",
+          price,
         });
       }
     }
@@ -284,14 +252,40 @@ const AddSale = () => {
         <div className="form-grid">
           <div className="field-group">
             <label className="field-label">Order ID <span>*</span></label>
-            <input
-              type="text"
-              required
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              className="form-input"
-              placeholder="e.g. ORD-1001"
-            />
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                type="text"
+                required
+                value={orderId}
+                onChange={(e) => { setOrderId(e.target.value); setFoundOrder(null); setOrderSaleItems([]); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); searchOrder(); } }}
+                className="form-input"
+                placeholder="Enter order ID"
+              />
+              <button type="button" onClick={searchOrder} disabled={orderSearchLoading} className="btn-secondary" title="Search order">
+                {orderSearchLoading ? <span className="circular-loader" /> : <Search size={17} />}
+              </button>
+            </div>
+            {orderLookupLoading && <div className="search-loading"><span className="circular-loader" /> Searching orders...</div>}
+            {orderSearchResults.length > 0 && (
+              <div className="search-dropdown">
+                {orderSearchResults.map((order) => (
+                  <button
+                    type="button"
+                    className="search-dropdown-option"
+                    key={order.orderid}
+                    onClick={() => {
+                      setOrderId(String(order.orderid));
+                      searchOrder(String(order.orderid));
+                    }}
+                  >
+                    <strong>Order #{order.orderid}</strong>
+                    <span>{order.customername} · {order.itemcount} item(s)</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {foundOrder && <small style={{ color: "var(--primary-dark)" }}>Order found with {foundOrder.items?.length || 0} item(s)</small>}
           </div>
 
           <div className="field-group">
@@ -319,173 +313,66 @@ const AddSale = () => {
         </div>
       </div>
 
-      <div className="section-title" style={{ marginBottom: '15px' }}>
-        <h2>Sale Items</h2>
-      </div>
-
-      {supplierGroups.map((group, groupIndex) => (
-        <div key={group.id} className="section-form-card" style={{ marginBottom: '24px', borderLeft: '4px solid var(--primary)' }}>
-          <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Store size={18} />
-              <h2>Supplier {groupIndex + 1}</h2>
-            </div>
-            {supplierGroups.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeSupplierGroup(groupIndex)}
-                className="btn-secondary"
-                style={{ color: 'var(--danger)', borderColor: 'var(--danger-light)' }}
-              >
-                <Trash2 size={16} /> Remove Supplier
-              </button>
-            )}
+      {foundOrder ? (
+        <section className="section-form-card" style={{ marginBottom: '24px' }}>
+          <div className="section-title">
+            <ShoppingBag size={18} />
+            <h2>Order Items</h2>
           </div>
-
-          <div className="field-group" style={{ marginBottom: '20px' }}>
-            <label className="field-label">Select Supplier <span>*</span></label>
-            <select
-              value={group.supplierid}
-              onChange={(e) => handleSupplierChange(groupIndex, e.target.value)}
-              className="form-select"
-              style={{ maxWidth: '400px' }}
-            >
-              <option value="">Select Supplier</option>
-              {suppliersList.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {group.supplierid && (
-            <div className="table-responsive">
-              <table className="orders-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Available Stock</th>
-                    <th style={{ width: '200px' }}>Quantity & Unit</th>
-                    <th>Price (₹)</th>
-                    <th>Total (₹)</th>
-                    <th>Remove</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {group.products.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)" }}>
-                        No products added. Click "+ Add Product" below.
+          <div className="table-responsive">
+            <table className="orders-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Order Quantity</th>
+                  <th>Order Price</th>
+                  <th>Supplier</th>
+                  <th>Supplier Stock</th>
+                  <th>Sale Price / Gram</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orderSaleItems.map((item, itemIndex) => {
+                  const selectedProduct = item.selectedProduct;
+                  return (
+                    <tr key={item.id}>
+                      <td>{item.productname}</td>
+                      <td>{item.orderquantitygrams.toFixed(2)} g</td>
+                      <td>₹{formatIndianAmount(item.orderprice, 2)}</td>
+                      <td>
+                        {item.supplieroptions.length === 1 ? (
+                          <span>{item.supplieroptions[0].suppliername}</span>
+                        ) : item.supplieroptions.length > 1 ? (
+                          <select
+                            value={item.supplierid}
+                            onChange={(e) => selectOrderSupplier(itemIndex, e.target.value)}
+                            className="form-select"
+                          >
+                            <option value="">Select Supplier</option>
+                            {item.supplieroptions.map((supplier) => (
+                              <option key={supplier.supplierid} value={supplier.supplierid}>
+                                {supplier.suppliername}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span style={{ color: "var(--text-muted)" }}>No supplier linked</span>
+                        )}
                       </td>
+                      <td>{selectedProduct ? formatStock(selectedProduct.remainingweight, selectedProduct.unit) : "-"}</td>
+                      <td>{selectedProduct ? `₹${formatIndianAmount(Number(item.price), 4)}` : "Select supplier"}</td>
                     </tr>
-                  ) : (
-                    group.products.map((prod, prodIndex) => {
-                      const availableProducts = productsMap[group.supplierid] || [];
-                      const selectedProduct = availableProducts.find(p => p.id.toString() === prod.supplierproductid.toString());
-
-                      const qty = parseFloat(prod.quantity) || 0;
-                      const price = parseFloat(prod.price) || 0;
-                      const total = prod.unit === 'grams' ? qty * (price / 1000) : qty * price;
-
-                      return (
-                        <tr key={prod.id}>
-                          <td>
-                            <select
-                              value={prod.supplierproductid}
-                              onChange={(e) => handleProductChange(groupIndex, prodIndex, 'supplierproductid', e.target.value)}
-                              className="form-select"
-                            >
-                              <option value="">Select Product</option>
-                              {availableProducts.map(p => (
-                                <option key={p.id} value={p.id}>{p.productname}</option>
-                              ))}
-                            </select>
-                          </td>
-                          <td>
-                            {selectedProduct ? (
-                              <span style={{ fontWeight: '500', color: 'var(--primary-dark)' }}>
-                                {formatStock(selectedProduct.remainingweight, selectedProduct.unit)}
-                              </span>
-                            ) : "-"}
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', gap: '5px' }}>
-                              <input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={prod.quantity}
-                                onChange={(e) => handleProductChange(groupIndex, prodIndex, 'quantity', e.target.value)}
-                                className="form-input"
-                                placeholder="0"
-                                style={{ width: '80px' }}
-                              />
-                              <select
-                                value={prod.unit}
-                                onChange={(e) => handleProductChange(groupIndex, prodIndex, 'unit', e.target.value)}
-                                className="form-select"
-                                style={{ width: '80px' }}
-                              >
-                                <option value="kg">kg</option>
-                                <option value="grams">grams</option>
-                              </select>
-                            </div>
-                          </td>
-                          <td>
-                            <input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={prod.price}
-                              onChange={(e) => handleProductChange(groupIndex, prodIndex, 'price', e.target.value)}
-                              className="form-input"
-                              placeholder="0.00"
-                              style={{ width: '100px' }}
-                            />
-                          </td>
-                          <td>
-                            <span style={{ fontWeight: '600' }}>₹{total.toFixed(2)}</span>
-                          </td>
-                          <td>
-                            <button
-                              type="button"
-                              onClick={() => removeProductRow(groupIndex, prodIndex)}
-                              className="action-btn delete"
-                              title="Remove Product"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-              <div style={{ marginTop: '10px' }}>
-                <button
-                  type="button"
-                  onClick={() => addProductRow(groupIndex)}
-                  className="btn-secondary"
-                  style={{ fontSize: '13px', padding: '6px 12px' }}
-                >
-                  <Plus size={14} /> Add Product
-                </button>
-              </div>
-            </div>
-          )}
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : (
+        <div className="section-title" style={{ marginBottom: '15px' }}>
+          <h2>Sale Items</h2>
         </div>
-      ))}
-
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '30px' }}>
-        <button
-          type="button"
-          onClick={addSupplierGroup}
-          className="btn-secondary"
-          style={{ padding: '10px 20px', borderStyle: 'dashed', borderWidth: '2px' }}
-        >
-          <Plus size={18} /> Add Supplier
-        </button>
-      </div>
+      )}
 
       {/* Grand Total Footer */}
       <div className="section-form-card" style={{ marginBottom: '24px', backgroundColor: '#f9fafb' }}>
@@ -494,7 +381,7 @@ const AddSale = () => {
           <div style={{ textAlign: 'right' }}>
             <span style={{ fontSize: '16px', color: 'var(--text-muted)' }}>Grand Total</span>
             <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--primary)' }}>
-              ₹{grandTotal.toFixed(2)}
+              ₹{formatIndianAmount(grandTotal, 2)}
             </div>
           </div>
         </div>

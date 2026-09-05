@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../../utils/formatters";
 import { useNavigate } from "react-router-dom";
 import {
   ShoppingBag,
@@ -321,7 +322,7 @@ const OrderList = () => {
                       </td>
                       <td>
                         <span style={{ fontWeight: "800", color: "var(--text-main)", fontSize: "15px" }}>
-                          ₹{order.totalamount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₹{formatIndianAmount(order.totalamount, 2)}
                         </span>
                       </td>
                       <td>

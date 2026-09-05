@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, ArrowLeft, Save, X, Box } from "lucide-react";
+import { formatIndianAmount } from "../../utils/formatters";
+import { Plus, Edit2, Trash2, ArrowLeft, Save, X, Box, Search } from "lucide-react";
 import { API } from "../../service/api_service";
 import { APIROUTES } from "../../routes/api_routes";
 import { toast } from "react-toastify";
@@ -17,14 +18,58 @@ const SupplierProducts = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(null); // stores product id if editing inline or modal
+  const [productSearch, setProductSearch] = useState("");
+  const [productResults, setProductResults] = useState([]);
+  const [searchingProducts, setSearchingProducts] = useState(false);
+
+  useEffect(() => {
+    const value = productSearch.trim();
+    if (value.length < 2 || isEditing) {
+      setProductResults([]);
+      return undefined;
+    }
+
+    const timer = setTimeout(() => {
+      searchCatalogProducts(value);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [productSearch, isEditing]);
 
   const [formData, setFormData] = useState({
+    productid: "",
     productname: "",
     totalweight: "",
     unit: "kg",
     totalprice: "",
     perproductkgprice: "",
   });
+
+  const searchCatalogProducts = async (value = productSearch) => {
+    if (value.trim().length < 2) {
+      setProductResults([]);
+      return;
+    }
+    try {
+      setSearchingProducts(true);
+      const res = await API.post(APIROUTES.SEARCHPRODUCTS, { search: value, supplierid });
+      if (res.data?.statusCode === 200) setProductResults(res.data.data || []);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to search products");
+    } finally {
+      setSearchingProducts(false);
+    }
+  };
+
+  const selectCatalogProduct = (product) => {
+    setFormData((previous) => ({
+      ...previous,
+      productid: product.productid,
+      productname: product.productname,
+    }));
+    setProductSearch(product.productname);
+    setProductResults([]);
+  };
 
   const fetchProducts = async () => {
     try {
@@ -62,6 +107,18 @@ const SupplierProducts = () => {
     }
   }, [supplierid]);
 
+  useEffect(() => {
+    const totalWeight = parseFloat(formData.totalweight);
+    const perProductKgPrice = parseFloat(formData.perproductkgprice);
+    const totalPrice = Number.isFinite(totalWeight) && Number.isFinite(perProductKgPrice)
+      ? (totalWeight * perProductKgPrice).toFixed(2)
+      : "";
+
+    setFormData((previous) => (
+      previous.totalprice === totalPrice ? previous : { ...previous, totalprice: totalPrice }
+    ));
+  }, [formData.totalweight, formData.perproductkgprice]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -69,6 +126,7 @@ const SupplierProducts = () => {
 
   const resetForm = () => {
     setFormData({
+      productid: "",
       productname: "",
       totalweight: "",
       unit: "kg",
@@ -81,6 +139,7 @@ const SupplierProducts = () => {
   const handleEditClick = (product) => {
     setIsEditing(product.id);
     setFormData({
+      productid: product.productid || "",
       productname: product.productname,
       totalweight: product.totalweight,
       unit: product.unit,
@@ -92,8 +151,8 @@ const SupplierProducts = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.productname || !formData.totalweight || !formData.totalprice) {
-      toast.error("Please fill all required fields");
+    if (!formData.productid || !formData.totalweight || !formData.totalprice || !formData.perproductkgprice) {
+      toast.error("Select a catalog product and fill all required fields");
       return;
     }
 
@@ -217,15 +276,44 @@ const SupplierProducts = () => {
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
             <div className="field-group">
-              <label className="field-label">Product Name <span>*</span></label>
+                <label className="field-label">Search Catalog Product <span>*</span></label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Search size={18} style={{ marginTop: 10, color: "var(--text-muted)" }} />
+                  <input
+                    type="search"
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    className="form-input"
+                    placeholder="Type at least 2 characters"
+                    disabled={Boolean(isEditing)}
+                  />
+                </div>
+                {searchingProducts && <div className="search-loading"><span className="circular-loader" /> Searching products...</div>}
+                {productResults.length > 0 && (
+                  <div style={{ border: "1px solid var(--border-color)", borderRadius: 6, marginTop: 6, maxHeight: 160, overflowY: "auto" }}>
+                    {productResults.map((product) => (
+                      <button
+                        type="button"
+                        key={product.productid}
+                        onClick={() => selectCatalogProduct(product)}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 10px", border: 0, background: "#fff", cursor: "pointer" }}
+                      >
+                        {product.productname} {product.brandname ? `(${product.brandname})` : ""}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {formData.productid && <small>Selected: {formData.productname}</small>}
+              </div>
+              <div className="field-group">
+                <label className="field-label">Product Name</label>
               <input
                 type="text"
                 name="productname"
-                required
                 value={formData.productname}
-                onChange={handleInputChange}
+                  readOnly
                 className="form-input"
-                placeholder="e.g. Dates"
+                  placeholder="Select a catalog product"
               />
             </div>
             
@@ -267,9 +355,9 @@ const SupplierProducts = () => {
                 name="totalprice"
                 required
                 value={formData.totalprice}
-                onChange={handleInputChange}
+                readOnly
                 className="form-input"
-                placeholder="0.00"
+                placeholder="Automatically calculated"
               />
             </div>
             
@@ -344,15 +432,15 @@ const SupplierProducts = () => {
                 products.map((product, index) => (
                   <tr key={product.id} className="order-row">
                     <td className="secondary-text" style={{ fontWeight: '500' }}>{index + 1}</td>
-                    <td><span className="primary-text">{product.productname}</span></td>
+                    <td><span className="primary-text">{product.product?.productname || product.productname}</span></td>
                     <td><span className="secondary-text">{product.totalweight} {product.unit}</span></td>
                     <td>
                       <span className="secondary-text" style={{ fontWeight: '600', color: 'var(--primary-dark)' }}>
                         {product.remainingweight !== undefined ? `${product.remainingweight} ${product.unit}` : "-"}
                       </span>
                     </td>
-                    <td><span className="amount">₹{parseFloat(product.totalprice).toFixed(2)}</span></td>
-                    <td><span className="amount">₹{product.perproductkgprice !== undefined ? parseFloat(product.perproductkgprice).toFixed(2) : "-"}</span></td>
+                    <td><span className="amount">₹{formatIndianAmount(parseFloat(product.totalprice), 2)}</span></td>
+                    <td><span className="amount">₹{product.perproductkgprice !== undefined ? formatIndianAmount(parseFloat(product.perproductkgprice), 2) : "-"}</span></td>
                     <td><span className="date">{new Date(product.createdAt).toLocaleDateString()}</span></td>
                     <td>
                       <div className="action-cell">

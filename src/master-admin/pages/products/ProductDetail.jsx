@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatIndianAmount } from "../../../utils/formatters";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -173,11 +174,11 @@ const ProductDetail = () => {
                   <p style={{ fontSize: "11px", fontWeight: "800", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>Selling Price</p>
                   <div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginTop: "4px" }}>
                     <span style={{ fontSize: "28px", fontWeight: "900", color: "var(--primary)" }}>
-                      ₹{p.sellingprice > 0 ? p.sellingprice : p.price}
+                      ₹{formatIndianAmount(p.sellingprice > 0 ? p.sellingprice : p.price)}
                     </span>
                     {discountPercent > 0 && (
                       <span style={{ fontSize: "16px", fontWeight: "700", color: "#9ca3af", textDecoration: "line-through" }}>
-                        ₹{p.price}
+                        ₹{formatIndianAmount(p.price)}
                       </span>
                     )}
                   </div>
